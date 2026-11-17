@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Personal Assistant V6</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Фолбек на случай блокировки серверов Telegram в Беларуси -->
+    <script src="https://telegram.org/js/telegram-web-app.js" onerror="document.getElementById('error-banner').style.display='block'; document.getElementById('error-banner').innerText='Ошибка загрузки скрипта Telegram. Проверьте интернет.'"></script>
+    
+    <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #ffffff);
+            --text-color: var(--tg-theme-text-color, #000000);
+            --hint-color: var(--tg-theme-hint-color, #999999);
+            --secondary-bg: var(--tg-theme-secondary-bg-color, #f0f0f0);
+        }
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            font-family: sans-serif; 
+            margin: 0; padding: 0;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Бронебойный баннер ошибок (без классов Tailwind на случай сбоя стилей) -->
+    <div id="error-banner" style="display: none; background: #ef4444; color: white; padding: 12px; font-weight: bold; text-align: center; z-index: 9999; position: absolute; width: 100%; top: 0; font-size: 14px;"></div>
+
+    <!-- Стеклянная шапка (С МАРКЕРОМ ВЕРСИИ 6.0) -->
+    <header class="p-4 z-50 backdrop-blur-md bg-[var(--bg-color)]/90 border-b border-gray-500/10 flex items-center justify-between sticky top-0 shadow-sm">
+        <div>
+            <h1 id="user-greeting" class="text-2xl font-extrabold tracking-tight">Привет! 👋</h1>
+            <p class="text-xs font-bold text-blue-500 mt-1">Версия 6.0 (Safe Mode)</p>
+        </div>
+        <div class="w-11 h-11 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl shadow-lg">🤖</div>
+    </header>
+
+    <!-- Основной контейнер -->
+    <main id="app-content" class="flex-1 overflow-y-auto p-4 pb-24 space-y-4 bg-gradient-to-b from-[var(--bg-color)] to-[var(--secondary-bg)]/40"></main>
+
+    <!-- Нижнее меню -->
+    <nav class="absolute bottom-0 w-full z-50 backdrop-blur-md bg-[var(--bg-color)]/90 border-t border-gray-500/10 shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
+        <div id="bottom-nav" class="flex justify-around items-center p-2 pb-safe max-w-md mx-auto"></div>
+    </nav>
+
+    <script>
+        // Отловщик ошибок старой школы (работает всегда)
+        window.onerror = function(msg, url, line) {
+            var err = document.getElementById('error-banner');
+            if(err) { 
+                err.style.display = 'block'; 
+                err.innerText = 'JS Ошибка: ' + msg + ' (Стр ' + line + ')'; 
+            }
+            return false;
+        };
+
+        try {
+            // Безопасная инициализация Telegram
+            var tg = window.Telegram ? window.Telegram.WebApp : null;
+            if (tg && tg.expand) { tg.expand(); }
+            
+            var telegramId = 'test_user';
+            var firstName = 'Гость';
+            
+            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                telegramId = String(tg.initDataUnsafe.user.id);
+                firstName = tg.initDataUnsafe.user.first_name;
+            }
+            
+            // Если код дошел сюда, имя появится в шапке!
+            document.getElementById('user-greeting').innerText = 'Привет, ' + firstName + '! 🚀';
+
+            var API_URL = 'https://my-assistant-backend-0a8k.onrender.com';
+            var container = document.getElementById('app-content');
+            var nav = document.getElementById('bottom-nav');
+
+            // Безопасная функция переключения вкладок (без шаблонных строк)
+            window.switchTab = function(tabId) {
+                var tabsHtml = '';
+                var tabs = [
+                    {id: 'notes', icon: '📝', title: 'Заметки'},
+                    {id: 'tasks', icon: '✅', title: 'Задачи'},
+                    {id: 'geo', icon: '📍', title: 'Места'}
+                ];
+                
+                for(var i = 0; i < tabs.length; i++) {
+                    var t = tabs[i];
+                    var activeClass = (t.id === tabId) ? 'text-blue-500 bg-blue-500/10 scale-105' : 'text-gray-400';
+                    tabsHtml += '<button onclick="window.switchTab(\\'' + t.id + '\\')" class="flex flex-col items-center justify-center w-16 py-2 rounded-2xl transition-all ' + activeClass + '"><span class="text-xl mb-1">' + t.icon + '</span><span class="text-[10px] font-bold">' + t.title + '</span></button>';
+                }
+                nav.innerHTML = tabsHtml;
+
+                if (tabId === 'notes') {
+                    container.innerHTML = '<div class="bg-[var(--bg-color)] rounded-2xl shadow-sm border border-gray-500/10 mb-4"><textarea id="note-input" placeholder="Напишите мысль..." class="w-full p-4 bg-transparent outline-none h-32 resize-none text-sm"></textarea></div><button onclick="window.addNote()" id="save-note-btn" class="w-full py-3.5 rounded-2xl bg-blue-500 text-white font-bold text-sm mb-6">Сохранить заметку</button><div id="notes-list" class="space-y-3"></div>';
+                    window.loadNotes();
+                } 
+                else if (tabId === 'tasks') {
+                    container.innerHTML = '<div class="p-4 bg-[var(--bg-color)] rounded-2xl shadow-sm border border-gray-500/10 space-y-3 mb-6"><input type="text" id="task-input" placeholder="Что нужно сделать?" class="w-full bg-transparent border-b border-gray-500/20 py-2 outline-none text-sm"><div class="flex gap-2"><input type="datetime-local" id="task-deadline" class="flex-1 p-2 rounded-xl bg-[var(--secondary-bg)] text-xs outline-none"><button onclick="window.addTask()" class="w-10 h-10 rounded-xl bg-blue-500 text-white font-bold text-xl">+</button></div></div><div id="tasks-list" class="space-y-2.5"></div>';
+                    window.loadTasks();
+                }
+                else if (tabId === 'geo') {
+                    container.innerHTML = '<div class="p-4 bg-[var(--bg-color)] rounded-2xl shadow-sm border border-gray-500/10 space-y-4 mb-6"><input type="text" id="geo-input" placeholder="Название места..." class="w-full bg-transparent border-b border-gray-500/20 py-2 outline-none text-sm"><button onclick="window.addGeo()" id="save-geo-btn" class="w-full py-3.5 rounded-2xl bg-blue-500 text-white font-bold text-sm">📍 Прикрепить геопозицию</button></div><div id="geo-list" class="space-y-3"></div>';
+                    window.loadGeo();
+                }
+            };
+
+            // --- API ФУНКЦИИ ---
+            window.addNote = async function() {
+                var input = document.getElementById('note-input');
+                var btn = document.getElementById('save-note-btn');
+                if (!input || !input.value.trim()) return;
+                btn.innerText = 'Сохранение...';
+                try {
+                    await fetch(API_URL + '/notes', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({user_id: telegramId, text: input.value.trim()}) });
+                    input.value = ''; await window.loadNotes();
+                } catch (e) {}
+                btn.innerText = 'Сохранить заметку';
+            };
+            
+            window.loadNotes = async function() {
+                var list = document.getElementById('notes-list');
+                if(!list) return;
+                list.innerHTML = '<p class="text-blue-500 text-sm text-center">⏳ Загрузка...</p>';
+                try {
+                    var res = await fetch(API_URL + '/notes?user_id=' + telegramId);
+                    var notes = await res.json();
+                    if (!notes.length) { list.innerHTML = '<p class="text-center text-sm text-gray-400">Нет заметок</p>'; return; }
+                    list.innerHTML = notes.reverse().map(function(item) {
+                        return '<div class="p-4 rounded-2xl bg-[var(--bg-color)] shadow-sm border border-gray-500/10 flex justify-between items-center gap-3"><span class="break-words w-full text-sm">' + item.text + '</span><button onclick="window.delNote(' + item.id + ')" class="text-red-500 font-bold bg-red-500/10 w-8 h-8 rounded-full flex items-center justify-center">✕</button></div>';
+                    }).join('');
+                } catch (e) { list.innerHTML = '<p class="text-red-500 text-sm text-center">Ошибка сети</p>'; }
+            };
+            
+            window.delNote = async function(id) { await fetch(API_URL + '/notes/' + id, { method: 'DELETE' }); window.loadNotes(); };
+
+            window.addTask = async function() {
+                var input = document.getElementById('task-input');
+                var date = document.getElementById('task-deadline');
+                if (!input || !input.value.trim()) return;
+                try {
+                    await fetch(API_URL + '/tasks', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({user_id: telegramId, title: input.value.trim(), deadline: date.value || null}) });
+                    input.value = ''; date.value = ''; await window.loadTasks();
+                } catch (e) {}
+            };
+            
+            window.loadTasks = async function() {
+                var list = document.getElementById('tasks-list');
+                if(!list) return;
+                list.innerHTML = '<p class="text-blue-500 text-sm text-center">⏳ Загрузка...</p>';
+                try {
+                    var res = await fetch(API_URL + '/tasks?user_id=' + telegramId);
+                    var tasks = await res.json();
+                    if (!tasks.length) { list.innerHTML = '<p class="text-center text-sm text-gray-400">Нет задач</p>'; return; }
+                    list.innerHTML = tasks.reverse().map(function(item) {
+                        var dHtml = '';
+                        if (item.deadline) {
+                            var d = new Date(item.deadline);
+                            dHtml = '<div class="text-[11px] text-gray-400 mt-1">🗓 ' + d.toLocaleString() + '</div>';
+                        }
+                        var checked = item.status === 'done' ? 'checked' : '';
+                        var lineClass = item.status === 'done' ? 'line-through text-gray-400' : '';
+                        var borderClass = item.status === 'done' ? 'border-gray-500/5' : 'border-gray-500/10 border-l-4 border-l-blue-500';
+                        return '<div class="p-4 rounded-2xl bg-[var(--bg-color)] shadow-sm border ' + borderClass + ' flex items-start gap-3"><input type="checkbox" ' + checked + ' onchange="window.togTask(' + item.id + ', this.checked)" class="mt-1"><div class="w-full"><span class="break-words block text-sm font-medium ' + lineClass + '">' + item.title + '</span>' + dHtml + '</div><button onclick="window.delTask(' + item.id + ')" class="text-red-400 font-bold hover:bg-red-500/10 w-8 h-8 rounded-full flex items-center justify-center">✕</button></div>';
+                    }).join('');
+                } catch (e) { list.innerHTML = '<p class="text-red-500 text-sm text-center">Ошибка сети</p>'; }
+            };
+            
+            window.togTask = async function(id, isDone) { await fetch(API_URL + '/tasks/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({status: isDone ? 'done' : 'todo'}) }); window.loadTasks(); };
+            window.delTask = async function(id) { await fetch(API_URL + '/tasks/' + id, { method: 'DELETE' }); window.loadTasks(); };
+
+            window.addGeo = function() {
+                var input = document.getElementById('geo-input');
+                var btn = document.getElementById('save-geo-btn');
+                if (!input || !input.value.trim()) return;
+                btn.innerText = 'Поиск...';
+                navigator.geolocation.getCurrentPosition(async function(pos) {
+                    btn.innerText = 'Сохранение...';
+                    try {
+                        await fetch(API_URL + '/geo', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({user_id: telegramId, text: input.value.trim(), lat: pos.coords.latitude, lng: pos.coords.longitude}) });
+                        input.value = ''; await window.loadGeo();
+                    } catch (e) {}
+                    btn.innerText = '📍 Прикрепить геопозицию';
+                }, function() {
+                    btn.innerText = '📍 Прикрепить геопозицию';
+                    alert("Ошибка GPS");
+                }, { enableHighAccuracy: true, timeout: 15000 });
+            };
+            
+            window.loadGeo = async function() {
+                var list = document.getElementById('geo-list');
+                if(!list) return;
+                list.innerHTML = '<p class="text-blue-500 text-sm text-center">⏳ Загрузка...</p>';
+                try {
+                    var res = await fetch(API_URL + '/geo?user_id=' + telegramId);
+                    var places = await res.json();
+                    if (!places.length) { list.innerHTML = '<p class="text-center text-sm text-gray-400">Нет локаций</p>'; return; }
+                    list.innerHTML = places.reverse().map(function(item) {
+                        return '<div class="p-4 rounded-2xl bg-[var(--bg-color)] shadow-sm border border-gray-500/10 flex flex-col gap-2"><div class="flex justify-between items-start"><span class="font-bold break-words w-full text-sm">' + item.text + '</span><button onclick="window.delGeo(' + item.id + ')" class="text-red-400 font-bold bg-red-500/10 px-3 py-1 rounded-lg text-xs">Удалить</button></div><a href="https://maps.google.com/?q=' + item.lat + ',' + item.lng + '" target="_blank" class="text-xs text-blue-500 bg-blue-500/10 px-3 py-2 rounded-xl w-max">🗺 Открыть на карте</a></div>';
+                    }).join('');
+                } catch (e) { list.innerHTML = '<p class="text-red-500 text-sm text-center">Ошибка сети</p>'; }
+            };
+            
+            window.delGeo = async function(id) { await fetch(API_URL + '/geo/' + id, { method: 'DELETE' }); window.loadGeo(); };
+
+            // Запускаем отрисовку первой вкладки!
+            window.switchTab('notes');
+
+        } catch(globalError) {
+            var errBanner = document.getElementById('error-banner');
+            if(errBanner) {
+                errBanner.style.display = 'block';
+                errBanner.innerText = 'Критический сбой: ' + globalError.message;
+            }
+        }
+    </script>
+</body>
+</html>
