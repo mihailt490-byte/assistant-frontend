@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Assistant V7 Base</title>
+    <title>Assistant V8 Second Brain</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { 
-            background-color: #f3f4f6; /* Светло-серый фон по умолчанию */
-            color: #111827; 
-            font-family: sans-serif; 
-            margin: 0; padding: 0;
-        }
+        body { background-color: #f3f4f6; color: #111827; font-family: sans-serif; margin: 0; padding: 0; }
         .done-task { text-decoration: line-through; color: #9ca3af; }
         .hidden-tab { display: none !important; }
+        /* Прячем системный скроллбар для меню, но оставляем прокрутку */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden">
@@ -23,62 +21,132 @@
     <header class="p-4 bg-white border-b flex items-center justify-between sticky top-0 flex-shrink-0 shadow-sm z-50">
         <div>
             <h1 id="user-greeting" class="text-xl font-bold">Привет! 👋</h1>
-            <p class="text-xs text-gray-500">Версия 7.0 (Стабильная база)</p>
+            <p class="text-xs text-indigo-600 font-bold mt-1">Версия 8.0 (Второй мозг)</p>
         </div>
-        <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-lg">🤖</div>
+        <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">🧠</div>
     </header>
 
-    <!-- Основной контент (все экраны загружены сразу, но скрыты) -->
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
     <main class="flex-1 overflow-y-auto p-4 pb-20">
         
-        <!-- ЭКРАН 1: ЗАМЕТКИ -->
+        <!-- 1: ЗАМЕТКИ -->
         <div id="view-notes" class="space-y-4">
             <h2 class="text-lg font-bold">Заметки</h2>
-            <textarea id="note-input" placeholder="Напишите мысль..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-emerald-500 h-28 resize-none"></textarea>
-            <button onclick="addNote()" id="btn-add-note" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold">Сохранить</button>
+            <textarea id="note-input" placeholder="Напишите мысль..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500 h-28 resize-none"></textarea>
+            <button onclick="addNote()" id="btn-add-note" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold">Сохранить</button>
             <div id="list-notes" class="space-y-2 mt-4"></div>
         </div>
 
-        <!-- ЭКРАН 2: ЗАДАЧИ -->
+        <!-- 2: ЗАДАЧИ -->
         <div id="view-tasks" class="space-y-4 hidden-tab">
             <h2 class="text-lg font-bold">Задачи</h2>
             <div class="space-y-2">
-                <input type="text" id="task-input" placeholder="Название задачи..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-emerald-500">
+                <input type="text" id="task-input" placeholder="Название задачи..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500">
                 <div class="flex gap-2">
-                    <input type="datetime-local" id="task-deadline" class="w-full p-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-emerald-500">
-                    <button onclick="addTask()" id="btn-add-task" class="px-5 py-3 rounded-xl bg-emerald-600 text-white font-bold">+</button>
+                    <input type="datetime-local" id="task-deadline" class="w-full p-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-indigo-500">
+                    <button onclick="addTask()" id="btn-add-task" class="px-5 py-3 rounded-xl bg-indigo-600 text-white font-bold">+</button>
                 </div>
             </div>
             <div id="list-tasks" class="space-y-2 mt-4"></div>
         </div>
 
-        <!-- ЭКРАН 3: ГЕО-ЛОКАЦИИ -->
+        <!-- 3: ГЕО -->
         <div id="view-geo" class="space-y-4 hidden-tab">
             <h2 class="text-lg font-bold">Места</h2>
-            <input type="text" id="geo-input" placeholder="Название места..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500">
-            <button onclick="addGeo()" id="btn-add-geo" class="w-full py-3 rounded-xl bg-blue-600 text-white font-bold">📍 Сохранить геопозицию</button>
+            <input type="text" id="geo-input" placeholder="Название места..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500">
+            <button onclick="addGeo()" id="btn-add-geo" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold">📍 Сохранить геопозицию</button>
             <div id="list-geo" class="space-y-2 mt-4"></div>
+        </div>
+
+        <!-- 4: ССЫЛКИ -->
+        <div id="view-links" class="space-y-4 hidden-tab">
+            <h2 class="text-lg font-bold">Копилка ссылок</h2>
+            <div class="space-y-2">
+                <input type="text" id="link-title" placeholder="Название (например: Статья про маркетинг)" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500">
+                <div class="flex gap-2">
+                    <input type="url" id="link-url" placeholder="https://..." class="w-full p-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-indigo-500">
+                    <button onclick="addLink()" id="btn-add-link" class="px-5 py-3 rounded-xl bg-indigo-600 text-white font-bold">+</button>
+                </div>
+            </div>
+            <div id="list-links" class="space-y-2 mt-4"></div>
+        </div>
+
+        <!-- 5: ПОДПИСКИ -->
+        <div id="view-subs" class="space-y-4 hidden-tab">
+            <h2 class="text-lg font-bold">Подписки</h2>
+            <div class="bg-white p-3 rounded-xl shadow-sm border space-y-2">
+                <input type="text" id="sub-title" placeholder="Сервис (Яндекс Плюс, Netflix...)" class="w-full p-2 border-b focus:outline-none focus:border-indigo-500">
+                <div class="flex gap-2">
+                    <input type="number" id="sub-amount" placeholder="Сумма (руб)" class="w-full p-2 border-b focus:outline-none focus:border-indigo-500">
+                    <input type="number" id="sub-day" placeholder="День списания (1-31)" class="w-full p-2 border-b focus:outline-none focus:border-indigo-500">
+                </div>
+                <button onclick="addSub()" id="btn-add-sub" class="w-full py-2 mt-2 rounded-lg bg-indigo-600 text-white font-bold">Добавить</button>
+            </div>
+            <div id="list-subs" class="space-y-2 mt-4"></div>
+        </div>
+
+        <!-- 6: ДНЕВНИК -->
+        <div id="view-diary" class="space-y-4 hidden-tab">
+            <h2 class="text-lg font-bold">Итоги дня</h2>
+            <div class="space-y-2">
+                <select id="diary-mood" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500 bg-white text-2xl">
+                    <option value="🤩">🤩 Супер</option>
+                    <option value="🙂">🙂 Хорошо</option>
+                    <option value="😐">😐 Нормально</option>
+                    <option value="😔">😔 Грустно</option>
+                    <option value="😡">😡 Ужасно</option>
+                </select>
+                <textarea id="diary-text" placeholder="Пара слов о дне..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500 h-24 resize-none"></textarea>
+                <button onclick="addDiary()" id="btn-add-diary" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold">Записать</button>
+            </div>
+            <div id="list-diary" class="space-y-2 mt-4"></div>
+        </div>
+
+        <!-- 7: СЧЕТЧИКИ -->
+        <div id="view-countdowns" class="space-y-4 hidden-tab">
+            <h2 class="text-lg font-bold">Счетчик дней</h2>
+            <div class="space-y-2">
+                <input type="text" id="cd-title" placeholder="Событие (Новый год, Отпуск...)" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500">
+                <div class="flex gap-2">
+                    <input type="date" id="cd-date" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500">
+                    <button onclick="addCountdown()" id="btn-add-cd" class="px-5 py-3 rounded-xl bg-indigo-600 text-white font-bold">+</button>
+                </div>
+            </div>
+            <div id="list-countdowns" class="space-y-2 mt-4"></div>
         </div>
 
     </main>
 
-    <!-- Нижнее навигационное меню -->
-    <nav class="absolute bottom-0 w-full bg-white border-t p-2 flex justify-around items-center z-50">
-        <button onclick="switchTab('notes')" id="nav-notes" class="flex flex-col items-center flex-1 py-1 text-emerald-600 font-bold">
-            <span class="text-xl">📝</span><span class="text-xs">Заметки</span>
-        </button>
-        <button onclick="switchTab('tasks')" id="nav-tasks" class="flex flex-col items-center flex-1 py-1 text-gray-400">
-            <span class="text-xl">✅</span><span class="text-xs">Задачи</span>
-        </button>
-        <button onclick="switchTab('geo')" id="nav-geo" class="flex flex-col items-center flex-1 py-1 text-gray-400">
-            <span class="text-xl">📍</span><span class="text-xs">Места</span>
-        </button>
+    <!-- СВАЙП-МЕНЮ (Горизонтальная прокрутка) -->
+    <nav class="absolute bottom-0 w-full bg-white border-t z-50 pb-safe">
+        <div id="nav-container" class="flex overflow-x-auto hide-scroll snap-x">
+            <button onclick="switchTab('notes')" id="nav-notes" class="flex flex-col items-center min-w-[72px] py-2 text-indigo-600 font-bold flex-shrink-0 snap-center border-t-2 border-indigo-600 bg-indigo-50/50">
+                <span class="text-xl mb-1">📝</span><span class="text-[10px]">Заметки</span>
+            </button>
+            <button onclick="switchTab('tasks')" id="nav-tasks" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
+                <span class="text-xl mb-1">✅</span><span class="text-[10px]">Задачи</span>
+            </button>
+            <button onclick="switchTab('geo')" id="nav-geo" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
+                <span class="text-xl mb-1">📍</span><span class="text-[10px]">Места</span>
+            </button>
+            <button onclick="switchTab('links')" id="nav-links" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
+                <span class="text-xl mb-1">🔗</span><span class="text-[10px]">Ссылки</span>
+            </button>
+            <button onclick="switchTab('subs')" id="nav-subs" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
+                <span class="text-xl mb-1">💳</span><span class="text-[10px]">Подписки</span>
+            </button>
+            <button onclick="switchTab('diary')" id="nav-diary" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
+                <span class="text-xl mb-1">📖</span><span class="text-[10px]">Дневник</span>
+            </button>
+            <button onclick="switchTab('countdowns')" id="nav-countdowns" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
+                <span class="text-xl mb-1">⏳</span><span class="text-[10px]">Даты</span>
+            </button>
+        </div>
     </nav>
 
     <script>
         var tg = window.Telegram.WebApp;
         tg.expand();
-        
         var telegramId = 'test_user';
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             telegramId = String(tg.initDataUnsafe.user.id);
@@ -86,173 +154,65 @@
         }
 
         var API_URL = 'https://my-assistant-backend-0a8k.onrender.com';
+        var TABS = ['notes', 'tasks', 'geo', 'links', 'subs', 'diary', 'countdowns'];
 
-        // Простая функция переключения вкладок
         window.switchTab = function(tabName) {
-            // Прячем всё
-            document.getElementById('view-notes').className = 'space-y-4 hidden-tab';
-            document.getElementById('view-tasks').className = 'space-y-4 hidden-tab';
-            document.getElementById('view-geo').className = 'space-y-4 hidden-tab';
-            
-            // Делаем кнопки серыми
-            document.getElementById('nav-notes').className = 'flex flex-col items-center flex-1 py-1 text-gray-400';
-            document.getElementById('nav-tasks').className = 'flex flex-col items-center flex-1 py-1 text-gray-400';
-            document.getElementById('nav-geo').className = 'flex flex-col items-center flex-1 py-1 text-gray-400';
-
-            // Показываем нужное
-            document.getElementById('view-' + tabName).className = 'space-y-4';
-            var activeNavClass = 'flex flex-col items-center flex-1 py-1 text-emerald-600 font-bold';
-            if(tabName === 'geo') {
-                activeNavClass = 'flex flex-col items-center flex-1 py-1 text-blue-600 font-bold';
+            for(var i = 0; i < TABS.length; i++) {
+                var t = TABS[i];
+                document.getElementById('view-' + t).className = 'space-y-4 hidden-tab';
+                document.getElementById('nav-' + t).className = 'flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent';
             }
-            document.getElementById('nav-' + tabName).className = activeNavClass;
+            document.getElementById('view-' + tabName).className = 'space-y-4';
+            document.getElementById('nav-' + tabName).className = 'flex flex-col items-center min-w-[72px] py-2 text-indigo-600 font-bold flex-shrink-0 snap-center border-t-2 border-indigo-600 bg-indigo-50/50';
+            
+            // Центрируем скролл меню на активной кнопке
+            document.getElementById('nav-' + tabName).scrollIntoView({ behavior: 'smooth', inline: 'center' });
 
-            // Загружаем данные вкладки
             if (tabName === 'notes') loadNotes();
             if (tabName === 'tasks') loadTasks();
             if (tabName === 'geo') loadGeo();
+            if (tabName === 'links') loadLinks();
+            if (tabName === 'subs') loadSubs();
+            if (tabName === 'diary') loadDiary();
+            if (tabName === 'countdowns') loadCountdowns();
         };
 
-        // --- ЛОГИКА ЗАМЕТОК ---
-        window.addNote = function() {
-            var input = document.getElementById('note-input');
-            var btn = document.getElementById('btn-add-note');
-            var text = input.value.trim();
-            if (!text) return;
-            
-            btn.innerText = '...';
-            btn.disabled = true;
-            
-            fetch(API_URL + '/notes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: telegramId, text: text })
-            }).then(function() {
-                input.value = '';
-                btn.innerText = 'Сохранить';
-                btn.disabled = false;
-                loadNotes();
-            }).catch(function() {
-                btn.innerText = 'Ошибка';
-                btn.disabled = false;
-            });
-        };
+        // БАЗОВЫЕ ФУНКЦИИ (Заметки, Задачи, Гео)
+        window.addNote = function() { var i = document.getElementById('note-input'); var b = document.getElementById('btn-add-note'); if(!i.value.trim()) return; b.innerText='...'; fetch(API_URL+'/notes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,text:i.value.trim()})}).then(function(){i.value='';b.innerText='Сохранить';loadNotes();}); };
+        window.loadNotes = function() { var l = document.getElementById('list-notes'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/notes?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex justify-between gap-2 items-center"><span class="break-words w-full">'+d[i].text+'</span><button onclick="delNote('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div>'; l.innerHTML=h; }); };
+        window.delNote = function(id) { fetch(API_URL+'/notes/'+id,{method:'DELETE'}).then(loadNotes); };
 
-        window.loadNotes = function() {
-            var list = document.getElementById('list-notes');
-            list.innerHTML = '<p class="text-center text-gray-500">Загрузка...</p>';
-            fetch(API_URL + '/notes?user_id=' + telegramId)
-                .then(res => res.json())
-                .then(function(notes) {
-                    if (notes.length === 0) { list.innerHTML = '<p class="text-center text-gray-400">Нет заметок</p>'; return; }
-                    var html = '';
-                    for (var i = notes.length - 1; i >= 0; i--) {
-                        html += '<div class="p-3 bg-white rounded-xl shadow-sm border flex justify-between gap-2 items-center"><span class="break-words w-full">' + notes[i].text + '</span><button onclick="delNote(' + notes[i].id + ')" class="text-red-500 font-bold">Удалить</button></div>';
-                    }
-                    list.innerHTML = html;
-                });
-        };
-        
-        window.delNote = function(id) { fetch(API_URL + '/notes/' + id, { method: 'DELETE' }).then(loadNotes); };
+        window.addTask = function() { var i=document.getElementById('task-input'); var d=document.getElementById('task-deadline'); var b=document.getElementById('btn-add-task'); if(!i.value.trim()) return; b.innerText='...'; fetch(API_URL+'/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,title:i.value.trim(),deadline:d.value||null})}).then(function(){i.value='';d.value='';b.innerText='+';loadTasks();}); };
+        window.loadTasks = function() { var l=document.getElementById('list-tasks'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/tasks?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--){ var dt=d[i].deadline?'<div class="text-xs text-gray-500 mt-1">🗓 До: '+new Date(d[i].deadline).toLocaleString('ru-RU')+'</div>':''; h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex items-start gap-3"><input type="checkbox" class="mt-1" '+(d[i].status==='done'?'checked':'')+' onchange="togTask('+d[i].id+', this.checked)"><div class="w-full"><span class="'+(d[i].status==='done'?'done-task':'')+'">'+d[i].title+'</span>'+dt+'</div><button onclick="delTask('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div>'; } l.innerHTML=h; }); };
+        window.togTask = function(id, st) { fetch(API_URL+'/tasks/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:st?'done':'todo'})}).then(loadTasks); };
+        window.delTask = function(id) { fetch(API_URL+'/tasks/'+id,{method:'DELETE'}).then(loadTasks); };
 
-        // --- ЛОГИКА ЗАДАЧ ---
-        window.addTask = function() {
-            var input = document.getElementById('task-input');
-            var date = document.getElementById('task-deadline');
-            var btn = document.getElementById('btn-add-task');
-            var title = input.value.trim();
-            if (!title) return;
+        window.addGeo = function() { var i=document.getElementById('geo-input'); var b=document.getElementById('btn-add-geo'); if(!i.value.trim()) return; b.innerText='Ищем...'; navigator.geolocation.getCurrentPosition(function(pos){ fetch(API_URL+'/geo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,text:i.value.trim(),lat:pos.coords.latitude,lng:pos.coords.longitude})}).then(function(){i.value='';b.innerText='📍 Сохранить';loadGeo();}); }, function(){alert('Ошибка GPS');b.innerText='📍 Сохранить';}); };
+        window.loadGeo = function() { var l=document.getElementById('list-geo'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/geo?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex flex-col gap-2"><div class="flex justify-between items-center"><span class="font-bold w-full">'+d[i].text+'</span><button onclick="delGeo('+d[i].id+')" class="text-red-500 text-sm">X</button></div><a href="https://maps.google.com/?q='+d[i].lat+','+d[i].lng+'" target="_blank" class="text-indigo-600 text-sm underline">Отрыть на карте</a></div>'; l.innerHTML=h; }); };
+        window.delGeo = function(id) { fetch(API_URL+'/geo/'+id,{method:'DELETE'}).then(loadGeo); };
 
-            btn.innerText = '...';
-            btn.disabled = true;
+        // НОВЫЕ МОДУЛИ
+        // 4. Ссылки
+        window.addLink = function() { var t=document.getElementById('link-title'); var u=document.getElementById('link-url'); var b=document.getElementById('btn-add-link'); if(!t.value.trim() || !u.value.trim()) return; b.innerText='...'; fetch(API_URL+'/links',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,title:t.value.trim(),url:u.value.trim()})}).then(function(){t.value='';u.value='';b.innerText='+';loadLinks();}); };
+        window.loadLinks = function() { var l=document.getElementById('list-links'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/links?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex justify-between items-center gap-2"><div class="w-full overflow-hidden"><span class="font-bold block truncate">'+d[i].title+'</span><a href="'+d[i].url+'" target="_blank" class="text-xs text-indigo-500 underline truncate block">'+d[i].url+'</a></div><button onclick="delLink('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div>'; l.innerHTML=h; }); };
+        window.delLink = function(id) { fetch(API_URL+'/links/'+id,{method:'DELETE'}).then(loadLinks); };
 
-            fetch(API_URL + '/tasks', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: telegramId, title: title, deadline: date.value || null })
-            }).then(function() {
-                input.value = '';
-                date.value = '';
-                btn.innerText = '+';
-                btn.disabled = false;
-                loadTasks();
-            });
-        };
+        // 5. Подписки
+        window.addSub = function() { var t=document.getElementById('sub-title'); var a=document.getElementById('sub-amount'); var d=document.getElementById('sub-day'); var b=document.getElementById('btn-add-sub'); if(!t.value.trim() || !a.value.trim() || !d.value.trim()) return; b.innerText='...'; fetch(API_URL+'/subs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,title:t.value.trim(),amount:parseFloat(a.value),pay_day:parseInt(d.value)})}).then(function(){t.value='';a.value='';d.value='';b.innerText='Добавить';loadSubs();}); };
+        window.loadSubs = function() { var l=document.getElementById('list-subs'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/subs?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex justify-between items-center"><div class="w-full"><span class="font-bold">'+d[i].title+'</span><div class="text-xs text-gray-500">'+d[i].amount+' руб. | Каждое '+d[i].pay_day+' число</div></div><button onclick="delSub('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div>'; l.innerHTML=h; }); };
+        window.delSub = function(id) { fetch(API_URL+'/subs/'+id,{method:'DELETE'}).then(loadSubs); };
 
-        window.loadTasks = function() {
-            var list = document.getElementById('list-tasks');
-            list.innerHTML = '<p class="text-center text-gray-500">Загрузка...</p>';
-            fetch(API_URL + '/tasks?user_id=' + telegramId)
-                .then(res => res.json())
-                .then(function(tasks) {
-                    if (tasks.length === 0) { list.innerHTML = '<p class="text-center text-gray-400">Все выполнено</p>'; return; }
-                    var html = '';
-                    for (var i = tasks.length - 1; i >= 0; i--) {
-                        var task = tasks[i];
-                        var checked = task.status === 'done' ? 'checked' : '';
-                        var lineClass = task.status === 'done' ? 'done-task' : '';
-                        var deadlineText = '';
-                        if (task.deadline) {
-                            var d = new Date(task.deadline);
-                            deadlineText = '<div class="text-xs text-gray-500 mt-1">🗓 До: ' + d.toLocaleString('ru-RU') + '</div>';
-                        }
-                        html += '<div class="p-3 bg-white rounded-xl shadow-sm border flex items-start gap-3"><input type="checkbox" class="mt-1" ' + checked + ' onchange="togTask(' + task.id + ', this.checked)"><div class="w-full"><span class="' + lineClass + '">' + task.title + '</span>' + deadlineText + '</div><button onclick="delTask(' + task.id + ')" class="text-red-500 font-bold">X</button></div>';
-                    }
-                    list.innerHTML = html;
-                });
-        };
+        // 6. Дневник
+        window.addDiary = function() { var m=document.getElementById('diary-mood'); var t=document.getElementById('diary-text'); var b=document.getElementById('btn-add-diary'); if(!t.value.trim()) return; b.innerText='...'; fetch(API_URL+'/diary',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,mood:m.value,text:t.value.trim(),date_str:new Date().toLocaleDateString('ru-RU')})}).then(function(){t.value='';b.innerText='Записать';loadDiary();}); };
+        window.loadDiary = function() { var l=document.getElementById('list-diary'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/diary?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=0;i<d.length;i++) h+='<div class="p-3 bg-white rounded-xl shadow-sm border space-y-2"><div class="flex justify-between items-center"><span class="text-xs text-gray-500 font-bold">'+d[i].date_str+'</span><button onclick="delDiary('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div><div class="flex gap-2 items-start"><span class="text-2xl">'+d[i].mood+'</span><span class="text-sm">'+d[i].text+'</span></div></div>'; l.innerHTML=h; }); };
+        window.delDiary = function(id) { fetch(API_URL+'/diary/'+id,{method:'DELETE'}).then(loadDiary); };
 
-        window.togTask = function(id, isDone) { fetch(API_URL + '/tasks/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({status: isDone ? 'done' : 'todo'}) }).then(loadTasks); };
-        window.delTask = function(id) { fetch(API_URL + '/tasks/' + id, { method: 'DELETE' }).then(loadTasks); };
+        // 7. Счетчики дней
+        window.addCountdown = function() { var t=document.getElementById('cd-title'); var d=document.getElementById('cd-date'); var b=document.getElementById('btn-add-cd'); if(!t.value.trim() || !d.value) return; b.innerText='...'; fetch(API_URL+'/countdowns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,title:t.value.trim(),target_date:d.value})}).then(function(){t.value='';d.value='';b.innerText='+';loadCountdowns();}); };
+        window.loadCountdowns = function() { var l=document.getElementById('list-countdowns'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/countdowns?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--){ var diff=new Date(d[i].target_date)-new Date(); var days=Math.ceil(diff/(1000*60*60*24)); var daysText=days>0?('Осталось дней: '+days):('Прошло дней: '+Math.abs(days)); h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex justify-between items-center"><div class="w-full"><span class="font-bold">'+d[i].title+'</span><div class="text-xs '+(days>0?'text-indigo-600':'text-gray-500')+' font-bold">'+daysText+'</div></div><button onclick="delCountdown('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div>'; } l.innerHTML=h; }); };
+        window.delCountdown = function(id) { fetch(API_URL+'/countdowns/'+id,{method:'DELETE'}).then(loadCountdowns); };
 
-        // --- ЛОГИКА ГЕО ---
-        window.addGeo = function() {
-            var input = document.getElementById('geo-input');
-            var btn = document.getElementById('btn-add-geo');
-            var text = input.value.trim();
-            if (!text) return;
-
-            btn.innerText = 'Ищем...';
-            btn.disabled = true;
-
-            navigator.geolocation.getCurrentPosition(function(pos) {
-                btn.innerText = 'Сохраняем...';
-                fetch(API_URL + '/geo', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: telegramId, text: text, lat: pos.coords.latitude, lng: pos.coords.longitude })
-                }).then(function() {
-                    input.value = '';
-                    btn.innerText = '📍 Сохранить геопозицию';
-                    btn.disabled = false;
-                    loadGeo();
-                });
-            }, function() {
-                alert('Не удалось получить координаты');
-                btn.innerText = '📍 Сохранить геопозицию';
-                btn.disabled = false;
-            });
-        };
-
-        window.loadGeo = function() {
-            var list = document.getElementById('list-geo');
-            list.innerHTML = '<p class="text-center text-gray-500">Загрузка...</p>';
-            fetch(API_URL + '/geo?user_id=' + telegramId)
-                .then(res => res.json())
-                .then(function(places) {
-                    if (places.length === 0) { list.innerHTML = '<p class="text-center text-gray-400">Нет мест</p>'; return; }
-                    var html = '';
-                    for (var i = places.length - 1; i >= 0; i--) {
-                        var p = places[i];
-                        html += '<div class="p-3 bg-white rounded-xl shadow-sm border flex flex-col gap-2"><div class="flex justify-between items-center"><span class="font-bold w-full">' + p.text + '</span><button onclick="delGeo(' + p.id + ')" class="text-red-500 text-sm">Удалить</button></div><a href="https://maps.google.com/?q=' + p.lat + ',' + p.lng + '" target="_blank" class="text-blue-600 text-sm underline">Отрыть на карте</a></div>';
-                    }
-                    list.innerHTML = html;
-                });
-        };
-        
-        window.delGeo = function(id) { fetch(API_URL + '/geo/' + id, { method: 'DELETE' }).then(loadGeo); };
-
-        // Инициализация при старте
+        // Запуск
         loadNotes();
     </script>
 </body>
