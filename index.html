@@ -3,143 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Assistant V8 Second Brain</title>
+    <title>Assistant V9 Pro UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background-color: #f3f4f6; color: #111827; font-family: sans-serif; margin: 0; padding: 0; }
-        .done-task { text-decoration: line-through; color: #9ca3af; }
+        body { 
+            background-color: #f8fafc; 
+            color: #0f172a; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; padding: 0; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        .done-task { text-decoration: line-through; color: #94a3b8; }
         .hidden-tab { display: none !important; }
-        /* Прячем системный скроллбар для меню, но оставляем прокрутку */
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Плавное появление при переключении вкладок на чистом CSS */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-animate { animation: fadeIn 0.2s ease-out; }
     </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden">
+<body class="flex flex-col h-screen overflow-hidden bg-slate-50">
 
-    <!-- Шапка -->
-    <header class="p-4 bg-white border-b flex items-center justify-between sticky top-0 flex-shrink-0 shadow-sm z-50">
+    <!-- Стеклянная шапка -->
+    <header class="px-5 py-3.5 bg-white/85 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between sticky top-0 flex-shrink-0 z-50">
         <div>
-            <h1 id="user-greeting" class="text-xl font-bold">Привет! 👋</h1>
-            <p class="text-xs text-indigo-600 font-bold mt-1">Версия 8.0 (Второй мозг)</p>
+            <h1 id="user-greeting" class="text-xl font-extrabold tracking-tight text-slate-800">Привет! 👋</h1>
+            <div class="flex items-center gap-1.5 mt-0.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Second Brain 9.0</p>
+            </div>
         </div>
-        <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">🧠</div>
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white text-lg shadow-md shadow-indigo-500/20">🧠</div>
     </header>
 
     <!-- ОСНОВНОЙ КОНТЕНТ -->
-    <main class="flex-1 overflow-y-auto p-4 pb-20">
+    <main class="flex-1 overflow-y-auto p-4 pb-28">
         
         <!-- 1: ЗАМЕТКИ -->
-        <div id="view-notes" class="space-y-4">
-            <h2 class="text-lg font-bold">Заметки</h2>
-            <textarea id="note-input" placeholder="Напишите мысль..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500 h-28 resize-none"></textarea>
-            <button onclick="addNote()" id="btn-add-note" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold">Сохранить</button>
-            <div id="list-notes" class="space-y-2 mt-4"></div>
+        <div id="view-notes" class="space-y-4 tab-animate">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Быстрая заметка</h2>
+                <textarea id="note-input" placeholder="О чем вы думаете?.." class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 h-28 resize-none text-sm transition-all"></textarea>
+                <button onclick="addNote()" id="btn-add-note" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold text-sm shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-transform">Сохранить мысль</button>
+            </div>
+            <div id="list-notes" class="space-y-2.5"></div>
         </div>
 
         <!-- 2: ЗАДАЧИ -->
-        <div id="view-tasks" class="space-y-4 hidden-tab">
-            <h2 class="text-lg font-bold">Задачи</h2>
-            <div class="space-y-2">
-                <input type="text" id="task-input" placeholder="Название задачи..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500">
+        <div id="view-tasks" class="space-y-4 hidden-tab tab-animate">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Новая задача</h2>
+                <input type="text" id="task-input" placeholder="Что нужно сделать?" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm transition-all">
                 <div class="flex gap-2">
-                    <input type="datetime-local" id="task-deadline" class="w-full p-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-indigo-500">
-                    <button onclick="addTask()" id="btn-add-task" class="px-5 py-3 rounded-xl bg-indigo-600 text-white font-bold">+</button>
+                    <input type="datetime-local" id="task-deadline" class="flex-1 p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600 focus:bg-white focus:outline-none focus:border-indigo-500">
+                    <button onclick="addTask()" id="btn-add-task" class="px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-lg shadow-md shadow-indigo-500/20 active:scale-95 transition-transform">+</button>
                 </div>
             </div>
-            <div id="list-tasks" class="space-y-2 mt-4"></div>
+            <div id="list-tasks" class="space-y-2.5"></div>
         </div>
 
         <!-- 3: ГЕО -->
-        <div id="view-geo" class="space-y-4 hidden-tab">
-            <h2 class="text-lg font-bold">Места</h2>
-            <input type="text" id="geo-input" placeholder="Название места..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500">
-            <button onclick="addGeo()" id="btn-add-geo" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold">📍 Сохранить геопозицию</button>
-            <div id="list-geo" class="space-y-2 mt-4"></div>
+        <div id="view-geo" class="space-y-4 hidden-tab tab-animate">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Гео-метка</h2>
+                <input type="text" id="geo-input" placeholder="Название места (кофейня, офис, ПВЗ)..." class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all">
+                <button onclick="addGeo()" id="btn-add-geo" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-sm shadow-md shadow-blue-500/20 active:scale-[0.98] transition-transform">📍 Прикрепить координаты</button>
+            </div>
+            <div id="list-geo" class="space-y-2.5"></div>
         </div>
 
         <!-- 4: ССЫЛКИ -->
-        <div id="view-links" class="space-y-4 hidden-tab">
-            <h2 class="text-lg font-bold">Копилка ссылок</h2>
-            <div class="space-y-2">
-                <input type="text" id="link-title" placeholder="Название (например: Статья про маркетинг)" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500">
+        <div id="view-links" class="space-y-4 hidden-tab tab-animate">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Сохранить на потом</h2>
+                <input type="text" id="link-title" placeholder="О чем ссылка? (видео, статья, товар)" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm transition-all">
                 <div class="flex gap-2">
-                    <input type="url" id="link-url" placeholder="https://..." class="w-full p-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-indigo-500">
-                    <button onclick="addLink()" id="btn-add-link" class="px-5 py-3 rounded-xl bg-indigo-600 text-white font-bold">+</button>
+                    <input type="url" id="link-url" placeholder="https://..." class="flex-1 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-sm focus:bg-white focus:outline-none focus:border-indigo-500">
+                    <button onclick="addLink()" id="btn-add-link" class="px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-lg shadow-md shadow-indigo-500/20 active:scale-95 transition-transform">+</button>
                 </div>
             </div>
-            <div id="list-links" class="space-y-2 mt-4"></div>
+            <div id="list-links" class="space-y-2.5"></div>
         </div>
 
         <!-- 5: ПОДПИСКИ -->
-        <div id="view-subs" class="space-y-4 hidden-tab">
-            <h2 class="text-lg font-bold">Подписки</h2>
-            <div class="bg-white p-3 rounded-xl shadow-sm border space-y-2">
-                <input type="text" id="sub-title" placeholder="Сервис (Яндекс Плюс, Netflix...)" class="w-full p-2 border-b focus:outline-none focus:border-indigo-500">
-                <div class="flex gap-2">
-                    <input type="number" id="sub-amount" placeholder="Сумма (руб)" class="w-full p-2 border-b focus:outline-none focus:border-indigo-500">
-                    <input type="number" id="sub-day" placeholder="День списания (1-31)" class="w-full p-2 border-b focus:outline-none focus:border-indigo-500">
+        <div id="view-subs" class="space-y-4 hidden-tab tab-animate">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Регулярный платеж</h2>
+                    <span id="subs-total" class="text-xs font-extrabold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">0 руб / мес</span>
                 </div>
-                <button onclick="addSub()" id="btn-add-sub" class="w-full py-2 mt-2 rounded-lg bg-indigo-600 text-white font-bold">Добавить</button>
+                <input type="text" id="sub-title" placeholder="Сервис (Яндекс Плюс, Telegram, Зал...)" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 focus:bg-white focus:outline-none focus:border-indigo-500 text-sm">
+                <div class="flex gap-2.5">
+                    <input type="number" id="sub-amount" placeholder="Сумма (руб)" class="w-1/2 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 focus:bg-white focus:outline-none focus:border-indigo-500 text-sm">
+                    <input type="number" id="sub-day" placeholder="День месяца (1-31)" class="w-1/2 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 focus:bg-white focus:outline-none focus:border-indigo-500 text-sm">
+                </div>
+                <button onclick="addSub()" id="btn-add-sub" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold text-sm shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-transform">Добавить подписку</button>
             </div>
-            <div id="list-subs" class="space-y-2 mt-4"></div>
+            <div id="list-subs" class="space-y-2.5"></div>
         </div>
 
         <!-- 6: ДНЕВНИК -->
-        <div id="view-diary" class="space-y-4 hidden-tab">
-            <h2 class="text-lg font-bold">Итоги дня</h2>
-            <div class="space-y-2">
-                <select id="diary-mood" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500 bg-white text-2xl">
-                    <option value="🤩">🤩 Супер</option>
-                    <option value="🙂">🙂 Хорошо</option>
-                    <option value="😐">😐 Нормально</option>
-                    <option value="😔">😔 Грустно</option>
-                    <option value="😡">😡 Ужасно</option>
+        <div id="view-diary" class="space-y-4 hidden-tab tab-animate">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Итоги дня</h2>
+                <select id="diary-mood" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 focus:bg-white focus:outline-none focus:border-indigo-500 text-base font-medium">
+                    <option value="🤩">🤩 Отличный день</option>
+                    <option value="🙂">🙂 Хорошее настроение</option>
+                    <option value="😐">😐 Обычный день</option>
+                    <option value="😔">😔 Немного грустно</option>
+                    <option value="😡">😡 Тяжелый день</option>
                 </select>
-                <textarea id="diary-text" placeholder="Пара слов о дне..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500 h-24 resize-none"></textarea>
-                <button onclick="addDiary()" id="btn-add-diary" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold">Записать</button>
+                <textarea id="diary-text" placeholder="Что важного произошло сегодня?.." class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 focus:bg-white focus:outline-none focus:border-indigo-500 h-24 resize-none text-sm"></textarea>
+                <button onclick="addDiary()" id="btn-add-diary" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold text-sm shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-transform">Сохранить запись</button>
             </div>
-            <div id="list-diary" class="space-y-2 mt-4"></div>
+            <div id="list-diary" class="space-y-2.5"></div>
         </div>
 
         <!-- 7: СЧЕТЧИКИ -->
-        <div id="view-countdowns" class="space-y-4 hidden-tab">
-            <h2 class="text-lg font-bold">Счетчик дней</h2>
-            <div class="space-y-2">
-                <input type="text" id="cd-title" placeholder="Событие (Новый год, Отпуск...)" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500">
+        <div id="view-countdowns" class="space-y-4 hidden-tab tab-animate">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Отсчет времени</h2>
+                <input type="text" id="cd-title" placeholder="Событие (Отпуск, День рождения, Привычка...)" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 focus:bg-white focus:outline-none focus:border-indigo-500 text-sm">
                 <div class="flex gap-2">
-                    <input type="date" id="cd-date" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:border-indigo-500">
-                    <button onclick="addCountdown()" id="btn-add-cd" class="px-5 py-3 rounded-xl bg-indigo-600 text-white font-bold">+</button>
+                    <input type="date" id="cd-date" class="flex-1 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-sm text-slate-600 focus:bg-white focus:outline-none focus:border-indigo-500">
+                    <button onclick="addCountdown()" id="btn-add-cd" class="px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-lg shadow-md shadow-indigo-500/20 active:scale-95 transition-transform">+</button>
                 </div>
             </div>
-            <div id="list-countdowns" class="space-y-2 mt-4"></div>
+            <div id="list-countdowns" class="space-y-2.5"></div>
         </div>
 
     </main>
 
-    <!-- СВАЙП-МЕНЮ (Горизонтальная прокрутка) -->
-    <nav class="absolute bottom-0 w-full bg-white border-t z-50 pb-safe">
-        <div id="nav-container" class="flex overflow-x-auto hide-scroll snap-x">
-            <button onclick="switchTab('notes')" id="nav-notes" class="flex flex-col items-center min-w-[72px] py-2 text-indigo-600 font-bold flex-shrink-0 snap-center border-t-2 border-indigo-600 bg-indigo-50/50">
-                <span class="text-xl mb-1">📝</span><span class="text-[10px]">Заметки</span>
+    <!-- ПЛАВАЮЩЕЕ СВАЙП-МЕНЮ -->
+    <nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-lg border-t border-slate-200/80 z-50 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        <div id="nav-container" class="flex overflow-x-auto hide-scroll px-2 py-1.5 gap-1">
+            <button onclick="switchTab('notes')" id="nav-notes" class="flex flex-col items-center min-w-[68px] py-2 rounded-2xl text-indigo-600 font-bold bg-indigo-50/80 flex-shrink-0 transition-all">
+                <span class="text-xl mb-0.5">📝</span><span class="text-[10px]">Заметки</span>
             </button>
-            <button onclick="switchTab('tasks')" id="nav-tasks" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
-                <span class="text-xl mb-1">✅</span><span class="text-[10px]">Задачи</span>
+            <button onclick="switchTab('tasks')" id="nav-tasks" class="flex flex-col items-center min-w-[68px] py-2 rounded-2xl text-slate-400 font-medium flex-shrink-0 transition-all">
+                <span class="text-xl mb-0.5">✅</span><span class="text-[10px]">Задачи</span>
             </button>
-            <button onclick="switchTab('geo')" id="nav-geo" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
-                <span class="text-xl mb-1">📍</span><span class="text-[10px]">Места</span>
+            <button onclick="switchTab('geo')" id="nav-geo" class="flex flex-col items-center min-w-[68px] py-2 rounded-2xl text-slate-400 font-medium flex-shrink-0 transition-all">
+                <span class="text-xl mb-0.5">📍</span><span class="text-[10px]">Места</span>
             </button>
-            <button onclick="switchTab('links')" id="nav-links" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
-                <span class="text-xl mb-1">🔗</span><span class="text-[10px]">Ссылки</span>
+            <button onclick="switchTab('links')" id="nav-links" class="flex flex-col items-center min-w-[68px] py-2 rounded-2xl text-slate-400 font-medium flex-shrink-0 transition-all">
+                <span class="text-xl mb-0.5">🔗</span><span class="text-[10px]">Ссылки</span>
             </button>
-            <button onclick="switchTab('subs')" id="nav-subs" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
-                <span class="text-xl mb-1">💳</span><span class="text-[10px]">Подписки</span>
+            <button onclick="switchTab('subs')" id="nav-subs" class="flex flex-col items-center min-w-[68px] py-2 rounded-2xl text-slate-400 font-medium flex-shrink-0 transition-all">
+                <span class="text-xl mb-0.5">💳</span><span class="text-[10px]">Подписки</span>
             </button>
-            <button onclick="switchTab('diary')" id="nav-diary" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
-                <span class="text-xl mb-1">📖</span><span class="text-[10px]">Дневник</span>
+            <button onclick="switchTab('diary')" id="nav-diary" class="flex flex-col items-center min-w-[68px] py-2 rounded-2xl text-slate-400 font-medium flex-shrink-0 transition-all">
+                <span class="text-xl mb-0.5">📖</span><span class="text-[10px]">Дневник</span>
             </button>
-            <button onclick="switchTab('countdowns')" id="nav-countdowns" class="flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent">
-                <span class="text-xl mb-1">⏳</span><span class="text-[10px]">Даты</span>
+            <button onclick="switchTab('countdowns')" id="nav-countdowns" class="flex flex-col items-center min-w-[68px] py-2 rounded-2xl text-slate-400 font-medium flex-shrink-0 transition-all">
+                <span class="text-xl mb-0.5">⏳</span><span class="text-[10px]">Даты</span>
             </button>
         </div>
     </nav>
@@ -150,7 +172,7 @@
         var telegramId = 'test_user';
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             telegramId = String(tg.initDataUnsafe.user.id);
-            document.getElementById('user-greeting').innerText = 'Привет, ' + tg.initDataUnsafe.user.first_name + '!';
+            document.getElementById('user-greeting').innerText = 'Привет, ' + tg.initDataUnsafe.user.first_name + '! 👋';
         }
 
         var API_URL = 'https://my-assistant-backend-0a8k.onrender.com';
@@ -159,13 +181,12 @@
         window.switchTab = function(tabName) {
             for(var i = 0; i < TABS.length; i++) {
                 var t = TABS[i];
-                document.getElementById('view-' + t).className = 'space-y-4 hidden-tab';
-                document.getElementById('nav-' + t).className = 'flex flex-col items-center min-w-[72px] py-2 text-gray-400 flex-shrink-0 snap-center border-t-2 border-transparent';
+                document.getElementById('view-' + t).className = 'space-y-4 hidden-tab tab-animate';
+                document.getElementById('nav-' + t).className = 'flex flex-col items-center min-w-[68px] py-2 rounded-2xl text-slate-400 font-medium flex-shrink-0 transition-all';
             }
-            document.getElementById('view-' + tabName).className = 'space-y-4';
-            document.getElementById('nav-' + tabName).className = 'flex flex-col items-center min-w-[72px] py-2 text-indigo-600 font-bold flex-shrink-0 snap-center border-t-2 border-indigo-600 bg-indigo-50/50';
+            document.getElementById('view-' + tabName).className = 'space-y-4 tab-animate';
+            document.getElementById('nav-' + tabName).className = 'flex flex-col items-center min-w-[68px] py-2 rounded-2xl text-indigo-600 font-bold bg-indigo-50/80 flex-shrink-0 transition-all scale-105';
             
-            // Центрируем скролл меню на активной кнопке
             document.getElementById('nav-' + tabName).scrollIntoView({ behavior: 'smooth', inline: 'center' });
 
             if (tabName === 'notes') loadNotes();
@@ -177,39 +198,40 @@
             if (tabName === 'countdowns') loadCountdowns();
         };
 
-        // БАЗОВЫЕ ФУНКЦИИ (Заметки, Задачи, Гео)
-        window.addNote = function() { var i = document.getElementById('note-input'); var b = document.getElementById('btn-add-note'); if(!i.value.trim()) return; b.innerText='...'; fetch(API_URL+'/notes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,text:i.value.trim()})}).then(function(){i.value='';b.innerText='Сохранить';loadNotes();}); };
-        window.loadNotes = function() { var l = document.getElementById('list-notes'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/notes?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex justify-between gap-2 items-center"><span class="break-words w-full">'+d[i].text+'</span><button onclick="delNote('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div>'; l.innerHTML=h; }); };
+        // 1. Заметки
+        window.addNote = function() { var i = document.getElementById('note-input'); var b = document.getElementById('btn-add-note'); if(!i.value.trim()) return; b.innerText='Сохранение...'; fetch(API_URL+'/notes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,text:i.value.trim()})}).then(function(){i.value='';b.innerText='Сохранить мысль';loadNotes();}); };
+        window.loadNotes = function() { var l = document.getElementById('list-notes'); l.innerHTML='<p class="text-center text-xs text-slate-400 py-4">Синхронизация...</p>'; fetch(API_URL+'/notes?user_id='+telegramId).then(function(r){return r.json();}).then(function(d){ if(!d.length){l.innerHTML='<div class="text-center py-8 text-slate-400 text-xs">Заметок пока нет</div>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex justify-between gap-3 items-center"><span class="break-words w-full text-sm text-slate-700 leading-relaxed">'+d[i].text+'</span><button onclick="delNote('+d[i].id+')" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 font-bold text-xs flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform">✕</button></div>'; l.innerHTML=h; }); };
         window.delNote = function(id) { fetch(API_URL+'/notes/'+id,{method:'DELETE'}).then(loadNotes); };
 
+        // 2. Задачи
         window.addTask = function() { var i=document.getElementById('task-input'); var d=document.getElementById('task-deadline'); var b=document.getElementById('btn-add-task'); if(!i.value.trim()) return; b.innerText='...'; fetch(API_URL+'/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,title:i.value.trim(),deadline:d.value||null})}).then(function(){i.value='';d.value='';b.innerText='+';loadTasks();}); };
-        window.loadTasks = function() { var l=document.getElementById('list-tasks'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/tasks?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--){ var dt=d[i].deadline?'<div class="text-xs text-gray-500 mt-1">🗓 До: '+new Date(d[i].deadline).toLocaleString('ru-RU')+'</div>':''; h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex items-start gap-3"><input type="checkbox" class="mt-1" '+(d[i].status==='done'?'checked':'')+' onchange="togTask('+d[i].id+', this.checked)"><div class="w-full"><span class="'+(d[i].status==='done'?'done-task':'')+'">'+d[i].title+'</span>'+dt+'</div><button onclick="delTask('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div>'; } l.innerHTML=h; }); };
+        window.loadTasks = function() { var l=document.getElementById('list-tasks'); l.innerHTML='<p class="text-center text-xs text-slate-400 py-4">Синхронизация...</p>'; fetch(API_URL+'/tasks?user_id='+telegramId).then(function(r){return r.json();}).then(function(d){ if(!d.length){l.innerHTML='<div class="text-center py-8 text-slate-400 text-xs">Все задачи выполнены! 🎉</div>';return;} var h=''; for(var i=d.length-1;i>=0;i--){ var dt=d[i].deadline?'<div class="inline-block text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md mt-1.5 font-medium">⏰ '+new Date(d[i].deadline).toLocaleString('ru-RU')+'</div>':''; var isDone = d[i].status==='done'; h+='<div class="p-4 bg-white rounded-2xl shadow-sm border '+(isDone?'border-slate-100 opacity-75':'border-slate-100 border-l-4 border-l-indigo-500')+' flex items-start gap-3.5"><input type="checkbox" class="mt-1 w-5 h-5 accent-indigo-600 rounded cursor-pointer" '+(isDone?'checked':'')+' onchange="togTask('+d[i].id+', this.checked)"><div class="w-full"><span class="text-sm font-medium text-slate-800 block '+(isDone?'done-task':'')+'">'+d[i].title+'</span>'+dt+'</div><button onclick="delTask('+d[i].id+')" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 font-bold text-xs flex items-center justify-center flex-shrink-0 active:scale-90">✕</button></div>'; } l.innerHTML=h; }); };
         window.togTask = function(id, st) { fetch(API_URL+'/tasks/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:st?'done':'todo'})}).then(loadTasks); };
         window.delTask = function(id) { fetch(API_URL+'/tasks/'+id,{method:'DELETE'}).then(loadTasks); };
 
-        window.addGeo = function() { var i=document.getElementById('geo-input'); var b=document.getElementById('btn-add-geo'); if(!i.value.trim()) return; b.innerText='Ищем...'; navigator.geolocation.getCurrentPosition(function(pos){ fetch(API_URL+'/geo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,text:i.value.trim(),lat:pos.coords.latitude,lng:pos.coords.longitude})}).then(function(){i.value='';b.innerText='📍 Сохранить';loadGeo();}); }, function(){alert('Ошибка GPS');b.innerText='📍 Сохранить';}); };
-        window.loadGeo = function() { var l=document.getElementById('list-geo'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/geo?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex flex-col gap-2"><div class="flex justify-between items-center"><span class="font-bold w-full">'+d[i].text+'</span><button onclick="delGeo('+d[i].id+')" class="text-red-500 text-sm">X</button></div><a href="https://maps.google.com/?q='+d[i].lat+','+d[i].lng+'" target="_blank" class="text-indigo-600 text-sm underline">Отрыть на карте</a></div>'; l.innerHTML=h; }); };
+        // 3. Гео
+        window.addGeo = function() { var i=document.getElementById('geo-input'); var b=document.getElementById('btn-add-geo'); if(!i.value.trim()) return; b.innerText='Поиск спутников...'; navigator.geolocation.getCurrentPosition(function(pos){ fetch(API_URL+'/geo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,text:i.value.trim(),lat:pos.coords.latitude,lng:pos.coords.longitude})}).then(function(){i.value='';b.innerText='📍 Прикрепить координаты';loadGeo();}); }, function(){alert('Ошибка GPS');b.innerText='📍 Прикрепить координаты';}); };
+        window.loadGeo = function() { var l=document.getElementById('list-geo'); l.innerHTML='<p class="text-center text-xs text-slate-400 py-4">Синхронизация...</p>'; fetch(API_URL+'/geo?user_id='+telegramId).then(function(r){return r.json();}).then(function(d){ if(!d.length){l.innerHTML='<div class="text-center py-8 text-slate-400 text-xs">Сохраненных мест нет</div>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-3"><div class="flex justify-between items-start gap-2"><span class="font-bold text-sm text-slate-800 w-full">'+d[i].text+'</span><button onclick="delGeo('+d[i].id+')" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 font-bold text-xs flex items-center justify-center flex-shrink-0">✕</button></div><a href="https://maps.google.com/?q='+d[i].lat+','+d[i].lng+'" target="_blank" class="text-xs font-semibold text-blue-600 bg-blue-50 px-3.5 py-2 rounded-xl w-max flex items-center gap-1.5">🗺 Открыть на карте</a></div>'; l.innerHTML=h; }); };
         window.delGeo = function(id) { fetch(API_URL+'/geo/'+id,{method:'DELETE'}).then(loadGeo); };
 
-        // НОВЫЕ МОДУЛИ
         // 4. Ссылки
         window.addLink = function() { var t=document.getElementById('link-title'); var u=document.getElementById('link-url'); var b=document.getElementById('btn-add-link'); if(!t.value.trim() || !u.value.trim()) return; b.innerText='...'; fetch(API_URL+'/links',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,title:t.value.trim(),url:u.value.trim()})}).then(function(){t.value='';u.value='';b.innerText='+';loadLinks();}); };
-        window.loadLinks = function() { var l=document.getElementById('list-links'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/links?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex justify-between items-center gap-2"><div class="w-full overflow-hidden"><span class="font-bold block truncate">'+d[i].title+'</span><a href="'+d[i].url+'" target="_blank" class="text-xs text-indigo-500 underline truncate block">'+d[i].url+'</a></div><button onclick="delLink('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div>'; l.innerHTML=h; }); };
+        window.loadLinks = function() { var l=document.getElementById('list-links'); l.innerHTML='<p class="text-center text-xs text-slate-400 py-4">Синхронизация...</p>'; fetch(API_URL+'/links?user_id='+telegramId).then(function(r){return r.json();}).then(function(d){ if(!d.length){l.innerHTML='<div class="text-center py-8 text-slate-400 text-xs">Список чтения пуст</div>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center gap-3"><div class="w-full overflow-hidden"><span class="font-bold text-sm text-slate-800 block truncate mb-1">'+d[i].title+'</span><a href="'+d[i].url+'" target="_blank" class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg inline-block truncate max-w-full">🔗 Перейти по ссылке</a></div><button onclick="delLink('+d[i].id+')" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 font-bold text-xs flex items-center justify-center flex-shrink-0">✕</button></div>'; l.innerHTML=h; }); };
         window.delLink = function(id) { fetch(API_URL+'/links/'+id,{method:'DELETE'}).then(loadLinks); };
 
-        // 5. Подписки
-        window.addSub = function() { var t=document.getElementById('sub-title'); var a=document.getElementById('sub-amount'); var d=document.getElementById('sub-day'); var b=document.getElementById('btn-add-sub'); if(!t.value.trim() || !a.value.trim() || !d.value.trim()) return; b.innerText='...'; fetch(API_URL+'/subs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,title:t.value.trim(),amount:parseFloat(a.value),pay_day:parseInt(d.value)})}).then(function(){t.value='';a.value='';d.value='';b.innerText='Добавить';loadSubs();}); };
-        window.loadSubs = function() { var l=document.getElementById('list-subs'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/subs?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex justify-between items-center"><div class="w-full"><span class="font-bold">'+d[i].title+'</span><div class="text-xs text-gray-500">'+d[i].amount+' руб. | Каждое '+d[i].pay_day+' число</div></div><button onclick="delSub('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div>'; l.innerHTML=h; }); };
+        // 5. Подписки (с подсчетом общей суммы в месяц)
+        window.addSub = function() { var t=document.getElementById('sub-title'); var a=document.getElementById('sub-amount'); var d=document.getElementById('sub-day'); var b=document.getElementById('btn-add-sub'); if(!t.value.trim() || !a.value.trim() || !d.value.trim()) return; b.innerText='Сохранение...'; fetch(API_URL+'/subs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,title:t.value.trim(),amount:parseFloat(a.value),pay_day:parseInt(d.value)})}).then(function(){t.value='';a.value='';d.value='';b.innerText='Добавить подписку';loadSubs();}); };
+        window.loadSubs = function() { var l=document.getElementById('list-subs'); var tot=document.getElementById('subs-total'); l.innerHTML='<p class="text-center text-xs text-slate-400 py-4">Синхронизация...</p>'; fetch(API_URL+'/subs?user_id='+telegramId).then(function(r){return r.json();}).then(function(d){ var sum=0; for(var j=0;j<d.length;j++){ sum += Number(d[j].amount)||0; } if(tot) tot.innerText = sum.toFixed(0) + ' руб / мес'; if(!d.length){l.innerHTML='<div class="text-center py-8 text-slate-400 text-xs">Активных подписок нет</div>';return;} var h=''; for(var i=d.length-1;i>=0;i--) h+='<div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center gap-3"><div class="w-full"><span class="font-bold text-sm text-slate-800 block">'+d[i].title+'</span><div class="flex items-center gap-2 mt-1"><span class="text-xs font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">'+d[i].amount+' руб.</span><span class="text-xs text-slate-400">Каждое '+d[i].pay_day+' число</span></div></div><button onclick="delSub('+d[i].id+')" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 font-bold text-xs flex items-center justify-center flex-shrink-0">✕</button></div>'; l.innerHTML=h; }); };
         window.delSub = function(id) { fetch(API_URL+'/subs/'+id,{method:'DELETE'}).then(loadSubs); };
 
         // 6. Дневник
-        window.addDiary = function() { var m=document.getElementById('diary-mood'); var t=document.getElementById('diary-text'); var b=document.getElementById('btn-add-diary'); if(!t.value.trim()) return; b.innerText='...'; fetch(API_URL+'/diary',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,mood:m.value,text:t.value.trim(),date_str:new Date().toLocaleDateString('ru-RU')})}).then(function(){t.value='';b.innerText='Записать';loadDiary();}); };
-        window.loadDiary = function() { var l=document.getElementById('list-diary'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/diary?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=0;i<d.length;i++) h+='<div class="p-3 bg-white rounded-xl shadow-sm border space-y-2"><div class="flex justify-between items-center"><span class="text-xs text-gray-500 font-bold">'+d[i].date_str+'</span><button onclick="delDiary('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div><div class="flex gap-2 items-start"><span class="text-2xl">'+d[i].mood+'</span><span class="text-sm">'+d[i].text+'</span></div></div>'; l.innerHTML=h; }); };
+        window.addDiary = function() { var m=document.getElementById('diary-mood'); var t=document.getElementById('diary-text'); var b=document.getElementById('btn-add-diary'); if(!t.value.trim()) return; b.innerText='Сохранение...'; fetch(API_URL+'/diary',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,mood:m.value,text:t.value.trim(),date_str:new Date().toLocaleDateString('ru-RU')})}).then(function(){t.value='';b.innerText='Сохранить запись';loadDiary();}); };
+        window.loadDiary = function() { var l=document.getElementById('list-diary'); l.innerHTML='<p class="text-center text-xs text-slate-400 py-4">Синхронизация...</p>'; fetch(API_URL+'/diary?user_id='+telegramId).then(function(r){return r.json();}).then(function(d){ if(!d.length){l.innerHTML='<div class="text-center py-8 text-slate-400 text-xs">Записей в дневнике пока нет</div>';return;} var h=''; for(var i=0;i<d.length;i++) h+='<div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 space-y-2.5"><div class="flex justify-between items-center border-b border-slate-50 pb-2"><span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">📅 '+d[i].date_str+'</span><button onclick="delDiary('+d[i].id+')" class="w-6 h-6 rounded-lg bg-rose-50 text-rose-500 font-bold text-[10px] flex items-center justify-center">✕</button></div><div class="flex gap-3 items-start pt-1"><span class="text-3xl bg-slate-50 p-2 rounded-2xl">'+d[i].mood+'</span><span class="text-sm text-slate-700 leading-relaxed pt-1">'+d[i].text+'</span></div></div>'; l.innerHTML=h; }); };
         window.delDiary = function(id) { fetch(API_URL+'/diary/'+id,{method:'DELETE'}).then(loadDiary); };
 
         // 7. Счетчики дней
         window.addCountdown = function() { var t=document.getElementById('cd-title'); var d=document.getElementById('cd-date'); var b=document.getElementById('btn-add-cd'); if(!t.value.trim() || !d.value) return; b.innerText='...'; fetch(API_URL+'/countdowns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:telegramId,title:t.value.trim(),target_date:d.value})}).then(function(){t.value='';d.value='';b.innerText='+';loadCountdowns();}); };
-        window.loadCountdowns = function() { var l=document.getElementById('list-countdowns'); l.innerHTML='<p class="text-center text-gray-500">Загрузка...</p>'; fetch(API_URL+'/countdowns?user_id='+telegramId).then(r=>r.json()).then(function(d){ if(!d.length){l.innerHTML='<p class="text-center text-gray-400">Пусто</p>';return;} var h=''; for(var i=d.length-1;i>=0;i--){ var diff=new Date(d[i].target_date)-new Date(); var days=Math.ceil(diff/(1000*60*60*24)); var daysText=days>0?('Осталось дней: '+days):('Прошло дней: '+Math.abs(days)); h+='<div class="p-3 bg-white rounded-xl shadow-sm border flex justify-between items-center"><div class="w-full"><span class="font-bold">'+d[i].title+'</span><div class="text-xs '+(days>0?'text-indigo-600':'text-gray-500')+' font-bold">'+daysText+'</div></div><button onclick="delCountdown('+d[i].id+')" class="text-red-500 font-bold text-sm">X</button></div>'; } l.innerHTML=h; }); };
+        window.loadCountdowns = function() { var l=document.getElementById('list-countdowns'); l.innerHTML='<p class="text-center text-xs text-slate-400 py-4">Синхронизация...</p>'; fetch(API_URL+'/countdowns?user_id='+telegramId).then(function(r){return r.json();}).then(function(d){ if(!d.length){l.innerHTML='<div class="text-center py-8 text-slate-400 text-xs">Счетчиков пока нет</div>';return;} var h=''; for(var i=d.length-1;i>=0;i--){ var diff=new Date(d[i].target_date)-new Date(); var days=Math.ceil(diff/(1000*60*60*24)); var badgeClass = days>0 ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'; var daysText=days>0?('Осталось: '+days+' дн.'):('Прошло: '+Math.abs(days)+' дн.'); h+='<div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center gap-3"><div class="w-full"><span class="font-bold text-sm text-slate-800 block mb-1.5">'+d[i].title+'</span><span class="text-xs font-extrabold px-2.5 py-1 rounded-lg inline-block '+badgeClass+'">⏳ '+daysText+'</span></div><button onclick="delCountdown('+d[i].id+')" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 font-bold text-xs flex items-center justify-center flex-shrink-0">✕</button></div>'; } l.innerHTML=h; }); };
         window.delCountdown = function(id) { fetch(API_URL+'/countdowns/'+id,{method:'DELETE'}).then(loadCountdowns); };
 
         // Запуск
