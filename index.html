@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>brain. // Второй мозг</title>
 
-  <!-- Подключение Google Fonts с системными фолбэками -->
+  <!-- Шрифты Google Fonts с надёжными системными фолбэками -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -13,26 +13,27 @@
     rel="stylesheet"
   />
 
-  <!-- Официальный SDK Telegram Mini Apps (используется безопасно через try/catch) -->
+  <!-- Официальный Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- 100% автономные стили: Swiss Editorial / Technical Neo-Minimalism -->
+  <!-- Автономные стили: Swiss Editorial / Technical Neo-Minimalism -->
   <style>
     :root {
       --bg: #F6F6F4;
       --desk: #E8E8E3;
       --surface: #FFFFFF;
       --ink: #0D0D0D;
-      --muted: #73736E;
-      --signal: #FF4422;
-      --border: #DCDCD6;
+      --muted: #7A7A75;
+      --border: #E2E2DE;
+      --accent: #FF4422;
+      --online: #16A34A;
 
       --font-display: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
 
-    /* Строгий сброс и 0px углы для всех элементов интерфейса */
+    /* Строгий сброс: 0px углы, никаких теней и градиентов */
     *, *::before, *::after {
       box-sizing: border-box;
       border-radius: 0px;
@@ -50,6 +51,7 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
     }
 
     @media (min-width: 520px) {
@@ -65,7 +67,12 @@
       appearance: none;
     }
 
-    /* Корневой контейнер: без transform и overflow:hidden, чтобы position:fixed работал безупречно */
+    button:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+    }
+
+    /* Корневой контейнер приложения */
     .app {
       width: 100%;
       max-width: 480px;
@@ -86,7 +93,7 @@
     }
 
     /* =========================================================
-       ВЕРХНЯЯ ЗАКРЕПЛЁННАЯ ШАПКА + НАВИГАЦИЯ ПО 7 МОДУЛЯМ
+       ВЕРХНЯЯ ШАПКА И НАВИГАЦИЯ
        ========================================================= */
     .sticky-top {
       position: sticky;
@@ -99,7 +106,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
       padding: 12px 16px;
       border-bottom: 1px solid var(--ink);
       background-color: var(--bg);
@@ -108,15 +115,15 @@
     .brand-group {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
       min-width: 0;
     }
 
     .brand-title {
       font-family: var(--font-display);
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 700;
-      line-height: 1;
+      line-height: 0.95;
       letter-spacing: -0.04em;
       color: var(--ink);
       margin: 0;
@@ -131,46 +138,109 @@
       color: var(--muted);
     }
 
-    .status-group {
+    .header-right {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 3px;
+      gap: 4px;
       flex-shrink: 0;
-      text-align: right;
     }
 
-    .status-pill {
+    .status-row {
       display: inline-flex;
       align-items: center;
       gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      display: inline-block;
+      flex-shrink: 0;
+      background-color: var(--accent);
+    }
+
+    .status-dot.is-online {
+      background-color: var(--online);
+    }
+
+    .status-dot.is-syncing {
+      background-color: var(--accent);
+      animation: pulse-dot 0.9s infinite alternate;
+    }
+
+    .status-dot.is-error {
+      background-color: var(--accent);
+    }
+
+    @keyframes pulse-dot {
+      from { opacity: 1; }
+      to { opacity: 0.25; }
+    }
+
+    .status-text {
       font-family: var(--font-mono);
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.07em;
       text-transform: uppercase;
       color: var(--ink);
     }
 
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      background-color: var(--signal);
-      display: inline-block;
-      flex-shrink: 0;
+    .status-text.is-error {
+      color: var(--accent);
+    }
+
+    .clock-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .clock-line {
       font-family: var(--font-mono);
       font-size: 10px;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
       color: var(--muted);
     }
 
     .clock-value {
       color: var(--ink);
       font-weight: 600;
+    }
+
+    .btn-refresh {
+      width: 22px;
+      height: 22px;
+      border: 1px solid var(--border);
+      background-color: var(--surface);
+      color: var(--ink);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+    }
+
+    .btn-refresh:hover,
+    .btn-refresh:active {
+      background-color: var(--ink);
+      color: #FFFFFF;
+      border-color: var(--ink);
+    }
+
+    .btn-refresh.is-spinning span {
+      display: inline-block;
+      animation: spin-icon 0.75s linear infinite;
+    }
+
+    @keyframes spin-icon {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     /* Горизонтальная индексная навигация */
@@ -219,6 +289,14 @@
       color: var(--muted);
     }
 
+    .tab-btn .tab-dot {
+      display: none;
+      width: 5px;
+      height: 5px;
+      background-color: var(--accent);
+      flex-shrink: 0;
+    }
+
     .tab-btn.is-active {
       background-color: var(--ink);
       color: #FFFFFF;
@@ -226,7 +304,11 @@
     }
 
     .tab-btn.is-active .tab-code {
-      color: rgba(255, 255, 255, 0.58);
+      color: rgba(255, 255, 255, 0.56);
+    }
+
+    .tab-btn.is-active .tab-dot {
+      display: inline-block;
     }
 
     .tab-btn.is-active::after {
@@ -236,7 +318,7 @@
       right: 0;
       bottom: 0;
       height: 2px;
-      background-color: var(--signal);
+      background-color: var(--accent);
     }
 
     /* =========================================================
@@ -244,11 +326,11 @@
        ========================================================= */
     .main-area {
       flex: 1 0 auto;
-      padding-bottom: 96px;
+      padding-bottom: 92px;
     }
 
     .section-head {
-      padding: 20px 16px 16px;
+      padding: 18px 16px 14px;
       border-bottom: 1px solid var(--ink);
       display: flex;
       align-items: flex-end;
@@ -268,7 +350,7 @@
 
     .section-title {
       font-family: var(--font-display);
-      font-size: 36px;
+      font-size: 34px;
       font-weight: 700;
       line-height: 0.96;
       letter-spacing: -0.04em;
@@ -283,7 +365,7 @@
 
     .section-index {
       font-family: var(--font-display);
-      font-size: 40px;
+      font-size: 38px;
       font-weight: 700;
       line-height: 0.85;
       letter-spacing: -0.05em;
@@ -300,7 +382,7 @@
       margin-top: 4px;
     }
 
-    /* Панель фильтров и счётчиков */
+    /* Панель фильтров задач */
     .sub-bar {
       display: flex;
       align-items: center;
@@ -351,7 +433,61 @@
       color: #FFFFFF;
     }
 
-    /* Списки и карточки модулей */
+    /* Состояния загрузки и пустого списка */
+    .state-box {
+      padding: 48px 20px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      background-color: var(--bg);
+    }
+
+    .state-code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .state-sub {
+      margin: 8px 0 0;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .loading-bar {
+      width: 140px;
+      height: 2px;
+      background-color: var(--border);
+      margin: 14px auto 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .loading-bar::after {
+      content: '';
+      position: absolute;
+      left: -45%;
+      top: 0;
+      width: 45%;
+      height: 100%;
+      background-color: var(--accent);
+      animation: slide-bar 1.1s linear infinite;
+    }
+
+    @keyframes slide-bar {
+      0% { left: -45%; }
+      100% { left: 100%; }
+    }
+
+    /* Общие карточки списка */
     .item-list {
       display: flex;
       flex-direction: column;
@@ -363,28 +499,6 @@
       padding: 14px 16px;
     }
 
-    .empty-state {
-      padding: 48px 20px;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-      background-color: var(--bg);
-    }
-
-    .empty-code {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .empty-text {
-      margin: 8px 0 0;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    /* Кнопка удаления (×) */
     .btn-delete {
       width: 30px;
       height: 30px;
@@ -466,7 +580,7 @@
       margin-top: 7px;
     }
 
-    .mono-date {
+    .mono-meta {
       font-family: var(--font-mono);
       font-size: 10px;
       letter-spacing: 0.08em;
@@ -474,15 +588,15 @@
       color: var(--muted);
     }
 
-    .mono-date.is-urgent {
-      color: var(--signal);
+    .mono-meta.is-urgent {
+      color: var(--accent);
       font-weight: 600;
     }
 
-    .badge-urgent {
+    .badge-accent {
       display: inline-block;
       padding: 2px 6px;
-      background-color: var(--signal);
+      background-color: var(--accent);
       color: #FFFFFF;
       font-family: var(--font-mono);
       font-size: 9px;
@@ -500,15 +614,16 @@
       margin-bottom: 8px;
     }
 
-    .note-index-line {
+    .note-index {
       font-family: var(--font-mono);
       font-size: 10px;
+      font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
     }
 
-    .note-index-line strong {
+    .note-index strong {
       color: var(--ink);
     }
 
@@ -546,7 +661,7 @@
 
     .subs-total-num {
       font-family: var(--font-display);
-      font-size: 44px;
+      font-size: 42px;
       font-weight: 700;
       line-height: 1;
       letter-spacing: -0.04em;
@@ -554,10 +669,10 @@
 
     .subs-total-cur {
       font-family: var(--font-mono);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       letter-spacing: 0.08em;
-      color: var(--signal);
+      color: var(--accent);
     }
 
     .sub-row {
@@ -653,21 +768,23 @@
     .btn-square-open {
       width: 34px;
       height: 34px;
+      border: none;
       background-color: var(--ink);
       color: #FFFFFF;
-      text-decoration: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       font-family: var(--font-mono);
       font-size: 15px;
       line-height: 1;
+      cursor: pointer;
+      padding: 0;
       transition: background-color 120ms ease;
     }
 
     .btn-square-open:hover,
     .btn-square-open:active {
-      background-color: var(--signal);
+      background-color: var(--accent);
     }
 
     /* 05. ДНЕВНИК */
@@ -711,6 +828,12 @@
       gap: 10px;
     }
 
+    .geo-clickable {
+      flex: 1 1 auto;
+      min-width: 0;
+      cursor: pointer;
+    }
+
     .geo-code {
       font-family: var(--font-mono);
       font-size: 10px;
@@ -749,19 +872,20 @@
       align-items: center;
       gap: 6px;
       padding: 7px 12px;
+      border: none;
       background-color: var(--ink);
       color: #FFFFFF;
-      text-decoration: none;
       font-family: var(--font-mono);
       font-size: 10px;
       font-weight: 600;
       letter-spacing: 0.1em;
       text-transform: uppercase;
+      cursor: pointer;
     }
 
     .btn-map:hover,
     .btn-map:active {
-      background-color: var(--signal);
+      background-color: var(--accent);
     }
 
     /* 07. СЧЁТЧИКИ */
@@ -817,12 +941,12 @@
     }
 
     .cd-delete-link:hover {
-      color: var(--signal);
+      color: var(--accent);
     }
 
     .cd-right {
       flex-shrink: 0;
-      min-width: 104px;
+      min-width: 112px;
       padding-left: 14px;
       border-left: 1px solid var(--border);
       display: flex;
@@ -834,7 +958,7 @@
 
     .cd-number {
       font-family: var(--font-display);
-      font-size: 46px;
+      font-size: 44px;
       font-weight: 700;
       line-height: 0.9;
       letter-spacing: -0.05em;
@@ -842,21 +966,21 @@
     }
 
     .cd-number.is-soon {
-      color: var(--signal);
+      color: var(--accent);
     }
 
     .cd-unit {
       font-family: var(--font-mono);
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
       margin-top: 6px;
     }
 
     .cd-unit.is-soon {
-      color: var(--signal);
+      color: var(--accent);
     }
 
     /* Нижний технический футер */
@@ -875,39 +999,20 @@
       background-color: var(--bg);
     }
 
-    .reset-btn {
-      border: none;
-      background: transparent;
-      padding: 2px 0;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      cursor: pointer;
-    }
-
-    .reset-btn:hover,
-    .reset-btn.is-confirm {
-      color: var(--signal);
-    }
-
     /* =========================================================
        КНОПКА ДОБАВЛЕНИЯ (+) — СТРОГО В ПРАВОМ НИЖНЕМ УГЛУ
        ========================================================= */
     .fab {
       position: fixed;
-      right: 20px;
-      bottom: 20px;
+      right: 16px;
+      bottom: 16px;
       width: 54px;
       height: 54px;
-      background-color: #FF4422;
+      background-color: var(--accent);
       color: #FFFFFF;
-      border: 1px solid #FF4422;
+      border: 1px solid var(--accent);
       border-radius: 0px;
-      z-index: 100;
+      z-index: 50;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -924,12 +1029,12 @@
 
     @media (min-width: 520px) {
       .fab {
-        right: calc(50% - 220px);
+        right: calc(50% - 224px);
       }
     }
 
     /* =========================================================
-       АДАПТИВНАЯ ШТОРКА ДОБАВЛЕНИЯ (BOTTOM SHEET MODAL)
+       АДАПТИВНАЯ ШТОРКА ДОБАВЛЕНИЯ (BOTTOM SHEET)
        ========================================================= */
     .sheet-overlay {
       position: fixed;
@@ -1064,7 +1169,7 @@
 
     .field-input:focus,
     .field-textarea:focus {
-      border-color: var(--signal);
+      border-color: var(--accent);
     }
 
     .mood-grid {
@@ -1131,8 +1236,8 @@
     }
 
     .form-notice.is-error {
-      border-color: var(--signal);
-      color: var(--signal);
+      border-color: var(--accent);
+      color: var(--accent);
       background-color: #FFF5F3;
     }
 
@@ -1156,67 +1261,67 @@
 
     .btn-submit:hover,
     .btn-submit:active {
-      background-color: var(--signal);
+      background-color: var(--accent);
     }
 
-    /* Тост-уведомление и баннер критических ошибок */
+    /* Нижний системный тост (не перекрывает кнопку + справа) */
     .toast {
       position: fixed;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 16px;
+      bottom: 16px;
+      max-width: calc(100vw - 92px);
       z-index: 300;
       background-color: var(--ink);
       color: #FFFFFF;
-      border-left: 3px solid var(--signal);
-      padding: 9px 14px;
+      border-left: 3px solid var(--accent);
+      padding: 10px 14px;
       font-family: var(--font-mono);
       font-size: 10px;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       display: none;
-      white-space: nowrap;
+      word-break: break-word;
     }
 
     .toast.is-visible {
       display: block;
     }
 
-    .error-banner {
-      display: none;
-      padding: 12px 16px;
-      background-color: var(--signal);
-      color: #FFFFFF;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.05em;
+    .toast.is-error {
+      background-color: var(--accent);
+      border-left-color: var(--ink);
     }
 
-    .error-banner.is-visible {
-      display: block;
+    @media (min-width: 520px) {
+      .toast {
+        left: calc(50% - 224px);
+        max-width: 360px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="app" id="app-root">
-    <!-- Баннер перехвата непредвиденных ошибок инициализации -->
-    <div id="error-banner" class="error-banner" role="alert"></div>
-
-    <!-- Закреплённая верхняя шапка и горизонтальная навигация -->
+    <!-- Закреплённая техническая шапка и навигация по 7 модулям -->
     <div class="sticky-top">
       <header class="app-header">
         <div class="brand-group">
           <h1 class="brand-title">brain.</h1>
           <div class="brand-sub">ВТОРОЙ МОЗГ // SYS 01</div>
         </div>
-        <div class="status-group">
-          <div class="status-pill">
-            <span class="status-dot" aria-hidden="true"></span>
-            <span>ОНЛАЙН // 07 МОДУЛЕЙ</span>
+        <div class="header-right">
+          <div class="status-row">
+            <span id="status-dot" class="status-dot is-syncing" aria-hidden="true"></span>
+            <span id="status-text" class="status-text">СИНХРОНИЗАЦИЯ...</span>
           </div>
-          <div class="clock-line">
-            ВРЕМЯ // <span id="live-clock" class="clock-value">00:00:00</span>
+          <div class="clock-row">
+            <div class="clock-line">
+              <span id="live-clock" class="clock-value">00:00:00</span>
+            </div>
+            <button type="button" id="refresh-btn" class="btn-refresh" title="Обновить данные" aria-label="Обновить данные">
+              <span>↻</span>
+            </button>
           </div>
         </div>
       </header>
@@ -1229,12 +1334,12 @@
 
     <!-- Технический футер -->
     <footer class="app-footer">
-      <span>BRAIN. // EDITORIAL OS</span>
-      <button type="button" id="reset-demo-btn" class="reset-btn">СБРОС ДЕМО</button>
+      <span>BRAIN. // RENDER API</span>
+      <span id="user-badge">UID // —</span>
     </footer>
   </div>
 
-  <!-- Квадратная кнопка добавления (+) — строго в правом нижнем углу -->
+  <!-- Фиксированная квадратная кнопка добавления (+) -->
   <button type="button" id="fab-btn" class="fab" aria-label="Добавить запись">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square">
       <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -1256,29 +1361,31 @@
       <form id="sheet-form" class="sheet-form" novalidate>
         <div id="sheet-fields"></div>
         <div id="form-notice" class="form-notice"></div>
-        <button type="submit" class="btn-submit">
-          <span>СОХРАНИТЬ ЗАПИСЬ</span>
+        <button type="submit" id="sheet-submit-btn" class="btn-submit">
+          <span id="sheet-submit-label">СОХРАНИТЬ</span>
           <span aria-hidden="true">→</span>
         </button>
       </form>
     </div>
   </div>
 
-  <!-- Системный тост -->
+  <!-- Нижний тост-уведомление -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <!-- =========================================================
-       ЧИСТЫЙ АВТОНОМНЫЙ JAVASCRIPT (VANILLA JS, ZERO CDN)
+       КЛИЕНТСКАЯ ЛОГИКА И ИНТЕГРАЦИЯ С FASTAPI НА RENDER
        ========================================================= -->
   <script>
     (function () {
       'use strict';
 
       /* ---------------------------------------------------------
-         1. БЕЗОПАСНАЯ ОБЁРТКА ДЛЯ TELEGRAM WEBAPP SDK
+         1. КОНФИГУРАЦИЯ API И TELEGRAM WEBAPP SDK
          --------------------------------------------------------- */
-      var TelegramBridge = {
-        getApp: function () {
+      const API_BASE = 'https://my-assistant-backend-0a8k.onrender.com';
+
+      const TelegramBridge = {
+        getApp() {
           try {
             if (window.Telegram && window.Telegram.WebApp) {
               return window.Telegram.WebApp;
@@ -1286,9 +1393,10 @@
           } catch (e) {}
           return null;
         },
-        init: function () {
+
+        init() {
           try {
-            var tg = this.getApp();
+            const tg = this.getApp();
             if (!tg) return;
             if (typeof tg.ready === 'function') tg.ready();
             if (typeof tg.expand === 'function') tg.expand();
@@ -1298,9 +1406,34 @@
             console.warn('Telegram WebApp init skipped:', e);
           }
         },
-        haptic: function (style) {
+
+        getUserId() {
           try {
-            var tg = this.getApp();
+            const id = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+            return String(id || 'demo_user');
+          } catch (e) {
+            return 'demo_user';
+          }
+        },
+
+        openExternal(url) {
+          const safeUrl = normalizeUrl(url);
+          if (!safeUrl) return;
+          try {
+            const tg = this.getApp();
+            if (tg && typeof tg.openLink === 'function') {
+              tg.openLink(safeUrl);
+              return;
+            }
+          } catch (e) {
+            console.warn('tg.openLink fallback:', e);
+          }
+          window.open(safeUrl, '_blank', 'noopener,noreferrer');
+        },
+
+        haptic(style) {
+          try {
+            const tg = this.getApp();
             if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
               tg.HapticFeedback.impactOccurred(style || 'light');
             }
@@ -1309,245 +1442,9 @@
       };
 
       /* ---------------------------------------------------------
-         2. БЕЗОПАСНОЕ ХРАНИЛИЩЕ (LOCALSTORAGE + ФОЛБЭК В ПАМЯТЬ)
+         2. МЕТАДАННЫЕ 7 МОДУЛЕЙ И СОСТОЯНИЕ ПРИЛОЖЕНИЯ
          --------------------------------------------------------- */
-      var SafeStorage = (function () {
-        var memoryFallback = {};
-        return {
-          getItem: function (key) {
-            try {
-              return window.localStorage.getItem(key);
-            } catch (e) {
-              return Object.prototype.hasOwnProperty.call(memoryFallback, key)
-                ? memoryFallback[key]
-                : null;
-            }
-          },
-          setItem: function (key, value) {
-            try {
-              window.localStorage.setItem(key, value);
-            } catch (e) {
-              memoryFallback[key] = String(value);
-            }
-          }
-        };
-      })();
-
-      /* ---------------------------------------------------------
-         3. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДАТ И ДЕМО-ДАННЫХ
-         --------------------------------------------------------- */
-      function pad2(num) {
-        return num < 10 ? '0' + num : String(num);
-      }
-
-      function relativeDateTimeISO(hoursOffset) {
-        var d = new Date(Date.now() + hoursOffset * 3600 * 1000);
-        return (
-          d.getFullYear() + '-' +
-          pad2(d.getMonth() + 1) + '-' +
-          pad2(d.getDate()) + 'T' +
-          pad2(d.getHours()) + ':' +
-          pad2(d.getMinutes())
-        );
-      }
-
-      function relativeDateISO(daysOffset) {
-        var d = new Date();
-        d.setHours(12, 0, 0, 0);
-        d.setDate(d.getDate() + daysOffset);
-        return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
-      }
-
-      function createDemoData() {
-        return {
-          tasks: [
-            {
-              id: 't_1',
-              title: 'Подключить новый интерфейс brain. к серверу FastAPI на Render',
-              deadline: relativeDateTimeISO(6),
-              done: false
-            },
-            {
-              id: 't_2',
-              title: 'Позвонить в студию и подтвердить бронь на вечер',
-              deadline: relativeDateTimeISO(16),
-              done: false
-            },
-            {
-              id: 't_3',
-              title: 'Собрать итоговые слайды и проверить финансовую модель',
-              deadline: relativeDateTimeISO(68),
-              done: false
-            },
-            {
-              id: 't_4',
-              title: 'Настроить cron-job.org на 10-минутный пинг базы Supabase',
-              deadline: relativeDateTimeISO(-10),
-              done: true
-            }
-          ],
-          notes: [
-            {
-              id: 'n_1',
-              text: 'Швейцарская сетка держится на типографике, чётких линиях 1px и одном сигнальном акценте #FF4422. Всё лишнее — шум.',
-              createdAt: relativeDateISO(0)
-            },
-            {
-              id: 'n_2',
-              text: 'Следующий шаг после редизайна — подключить Gemini API для быстрого разбора свободного текста в задачи и подписки.',
-              createdAt: relativeDateISO(-2)
-            },
-            {
-              id: 'n_3',
-              text: 'Проверить адаптивность вкладок и кнопки «+» на узком окне Telegram Desktop и на смартфоне.',
-              createdAt: relativeDateISO(-4)
-            }
-          ],
-          subs: [
-            { id: 's_1', name: 'Telegram Premium', amount: 13.50, billingDay: 5 },
-            { id: 's_2', name: 'Яндекс Плюс', amount: 11.99, billingDay: 15 },
-            { id: 's_3', name: 'Облачное хранилище 200 ГБ', amount: 9.50, billingDay: 22 },
-            { id: 's_4', name: 'Музыкальный сервис', amount: 14.00, billingDay: 28 }
-          ],
-          links: [
-            { id: 'l_1', title: 'Документация Telegram Mini Apps', url: 'https://core.telegram.org/bots/webapps' },
-            { id: 'l_2', title: 'Панель управления Render', url: 'https://dashboard.render.com' },
-            { id: 'l_3', title: 'Консоль базы данных Supabase', url: 'https://supabase.com/dashboard' },
-            { id: 'l_4', title: 'Архив швейцарской типографики', url: 'https://www.swissted.com' }
-          ],
-          diary: [
-            {
-              id: 'd_1',
-              date: relativeDateISO(0),
-              mood: '[ФОКУС]',
-              text: 'Перевёл мини-приложение на чистый автономный код без CDN. Запускается мгновенно даже в строгом WebView.'
-            },
-            {
-              id: 'd_2',
-              date: relativeDateISO(-1),
-              mood: '[СПОКОЙСТВИЕ]',
-              text: 'Уведомления по дедлайнам приходят стабильно, сервер перестал засыпать. Можно сфокусироваться на развитии продукта.'
-            },
-            {
-              id: 'd_3',
-              date: relativeDateISO(-3),
-              mood: '[ЭНЕРГИЯ]',
-              text: 'Зафиксировал визуальный язык приложения: чёткая иерархия, ноль скруглений, максимум пользы на экране.'
-            }
-          ],
-          geo: [
-            {
-              id: 'g_1',
-              name: 'Тихая кофейня в центре — стол у окна с розеткой',
-              lat: 53.9006,
-              lng: 27.5590
-            },
-            {
-              id: 'g_2',
-              name: 'Коворкинг для созвонов и глубокой работы',
-              lat: 53.9154,
-              lng: 27.5832
-            },
-            {
-              id: 'g_3',
-              name: 'Парковка у главного корпуса',
-              lat: 54.3108,
-              lng: 26.8542
-            }
-          ],
-          countdowns: [
-            { id: 'c_1', title: 'Релиз brain. v2.0 на Cloudflare', targetDate: relativeDateISO(5) },
-            { id: 'c_2', title: 'Защита проектного этапа', targetDate: relativeDateISO(14) },
-            { id: 'c_3', title: 'Начало зимних каникул', targetDate: relativeDateISO(38) }
-          ]
-        };
-      }
-
-      /* ---------------------------------------------------------
-         4. СЛОЙ ДАННЫХ (DATASERVICE) — ГОТОВ К ПОДКЛЮЧЕНИЮ FASTAPI
-         Замените методы ниже на fetch() к Render, не меняя UI-код.
-         --------------------------------------------------------- */
-      var STORAGE_KEY = 'brain_miniapp_data_v2';
-
-      var DataService = {
-        // Базовый адрес вашего бэкенда на Render (для будущей интеграции)
-        API_BASE_URL: 'https://my-assistant-backend-0a8k.onrender.com',
-
-        /**
-         * Загрузка всех 7 модулей (сейчас из SafeStorage, далее — GET к FastAPI)
-         */
-        loadAll: function () {
-          var raw = SafeStorage.getItem(STORAGE_KEY);
-          if (raw) {
-            try {
-              var parsed = JSON.parse(raw);
-              if (parsed && Array.isArray(parsed.tasks) && Array.isArray(parsed.countdowns)) {
-                return parsed;
-              }
-            } catch (e) {
-              console.warn('Ошибка чтения кэша, загружаем демо-данные:', e);
-            }
-          }
-          var demo = createDemoData();
-          this._saveAll(demo);
-          return demo;
-        },
-
-        /**
-         * Добавление новой записи в выбранный модуль (далее — POST /{moduleId})
-         */
-        addItem: function (state, moduleId, payload) {
-          var item = Object.assign({ id: moduleId + '_' + Date.now() }, payload);
-          state[moduleId].unshift(item);
-          this._saveAll(state);
-          return item;
-        },
-
-        /**
-         * Переключение статуса задачи todo / done (далее — PATCH /tasks/{id})
-         */
-        toggleTask: function (state, taskId) {
-          for (var i = 0; i < state.tasks.length; i++) {
-            if (state.tasks[i].id === taskId) {
-              state.tasks[i].done = !state.tasks[i].done;
-              this._saveAll(state);
-              return state.tasks[i];
-            }
-          }
-          return null;
-        },
-
-        /**
-         * Удаление записи из любого модуля (далее — DELETE /{moduleId}/{id})
-         */
-        deleteItem: function (state, moduleId, itemId) {
-          state[moduleId] = state[moduleId].filter(function (el) {
-            return el.id !== itemId;
-          });
-          this._saveAll(state);
-          return true;
-        },
-
-        /**
-         * Восстановление демонстрационного набора
-         */
-        resetDemo: function () {
-          var demo = createDemoData();
-          this._saveAll(demo);
-          return demo;
-        },
-
-        _saveAll: function (state) {
-          try {
-            SafeStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-          } catch (e) {}
-        }
-      };
-
-      /* ---------------------------------------------------------
-         5. МЕТАДАННЫЕ МОДУЛЕЙ И СОСТОЯНИЕ ПРИЛОЖЕНИЯ
-         --------------------------------------------------------- */
-      var MODULES = [
+      const MODULES = [
         { id: 'tasks',      code: '01', nav: 'ЗАДАЧИ',   title: 'задачи.',   eyebrow: 'ДЕДЛАЙНЫ И ПРИОРИТЕТЫ' },
         { id: 'notes',      code: '02', nav: 'ЗАМЕТКИ',  title: 'заметки.',  eyebrow: 'БУФЕР МЫСЛЕЙ И ТЕЗИСОВ' },
         { id: 'subs',       code: '03', nav: 'ПОДПИСКИ', title: 'подписки.', eyebrow: 'ЕЖЕМЕСЯЧНЫЕ СПИСАНИЯ' },
@@ -1557,21 +1454,142 @@
         { id: 'countdowns', code: '07', nav: 'СЧЁТЧИКИ', title: 'счётчики.', eyebrow: 'ОБРАТНЫЙ ОТСЧЁТ' }
       ];
 
-      var MOOD_TAGS = ['[ФОКУС]', '[СПОКОЙСТВИЕ]', '[ЭНЕРГИЯ]', '[УСТАЛОСТЬ]'];
+      const MOOD_TAGS = ['[ФОКУС]', '[СПОКОЙСТВИЕ]', '[ЭНЕРГИЯ]', '[УСТАЛОСТЬ]'];
 
-      var appState = {
-        data: null,
+      const appState = {
+        userId: 'demo_user',
         activeModule: 'tasks',
         taskFilter: 'all', // all | active | done
         selectedMood: MOOD_TAGS[0],
+        initialLoading: true,
+        isSyncing: false,
+        isSubmitting: false,
+        connectionStatus: 'syncing', // syncing | online | error
         toastTimer: null,
-        resetConfirm: false,
-        resetTimer: null
+        data: {
+          tasks: [],
+          notes: [],
+          subs: [],
+          links: [],
+          diary: [],
+          geo: [],
+          countdowns: []
+        }
       };
 
       /* ---------------------------------------------------------
-         6. УТИЛИТЫ ФОРМАТИРОВАНИЯ И ЭКРАНИРОВАНИЯ
+         3. СЕТЕВОЙ СЛОЙ (FETCH К FASTAPI)
          --------------------------------------------------------- */
+      async function apiRequest(path, options = {}) {
+        const response = await fetch(`${API_BASE}${path}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(options.headers || {})
+          },
+          ...options
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          return response.json();
+        }
+        return null;
+      }
+
+      async function fetchModule(moduleId) {
+        const uid = encodeURIComponent(appState.userId);
+        const list = await apiRequest(`/${moduleId}?user_id=${uid}`, { method: 'GET' });
+        appState.data[moduleId] = Array.isArray(list) ? list : [];
+        return appState.data[moduleId];
+      }
+
+      async function syncAllModules(isManual = false) {
+        if (appState.isSyncing) return;
+        appState.isSyncing = true;
+        setConnectionStatus('syncing');
+
+        const refreshBtn = document.getElementById('refresh-btn');
+        if (refreshBtn) {
+          refreshBtn.disabled = true;
+          refreshBtn.classList.add('is-spinning');
+        }
+
+        const results = await Promise.allSettled(
+          MODULES.map((mod) => fetchModule(mod.id))
+        );
+
+        const failedCount = results.filter((r) => r.status === 'rejected').length;
+
+        appState.initialLoading = false;
+        appState.isSyncing = false;
+
+        if (refreshBtn) {
+          refreshBtn.disabled = false;
+          refreshBtn.classList.remove('is-spinning');
+        }
+
+        if (failedCount === MODULES.length) {
+          setConnectionStatus('error');
+          showToast('ОШИБКА СЕТИ: СЕРВЕР НЕ ОТВЕЧАЕТ', true);
+        } else if (failedCount > 0) {
+          setConnectionStatus('error');
+          showToast(`ЧАСТИЧНЫЙ СБОЙ СИНХРОНИЗАЦИИ (${failedCount})`, true);
+        } else {
+          setConnectionStatus('online');
+          if (isManual) {
+            showToast('ДАННЫЕ ОБНОВЛЕНЫ');
+          }
+        }
+
+        renderApp();
+      }
+
+      function setConnectionStatus(status) {
+        appState.connectionStatus = status;
+        const dot = document.getElementById('status-dot');
+        const text = document.getElementById('status-text');
+        if (!dot || !text) return;
+
+        dot.className = 'status-dot';
+        text.className = 'status-text';
+
+        if (status === 'syncing') {
+          dot.classList.add('is-syncing');
+          text.textContent = 'СИНХРОНИЗАЦИЯ...';
+        } else if (status === 'online') {
+          dot.classList.add('is-online');
+          const modeSuffix = appState.userId === 'demo_user' ? ' [DEMO]' : '';
+          text.textContent = `ОНЛАЙН // 7 МОДУЛЕЙ${modeSuffix}`;
+        } else {
+          dot.classList.add('is-error');
+          text.classList.add('is-error');
+          text.textContent = 'ОШИБКА СЕТИ';
+        }
+      }
+
+      /* ---------------------------------------------------------
+         4. УТИЛИТЫ ФОРМАТИРОВАНИЯ, ДАТ И БЕЗОПАСНОСТИ
+         --------------------------------------------------------- */
+      function pad2(num) {
+        return num < 10 ? '0' + num : String(num);
+      }
+
+      function todayDDMMYYYY() {
+        const now = new Date();
+        return `${pad2(now.getDate())}.${pad2(now.getMonth() + 1)}.${now.getFullYear()}`;
+      }
+
+      function relativeDateISO(daysOffset) {
+        const d = new Date();
+        d.setHours(12, 0, 0, 0);
+        d.setDate(d.getDate() + daysOffset);
+        return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+      }
+
       function escapeHtml(val) {
         return String(val === null || val === undefined ? '' : val)
           .replace(/&/g, '&amp;')
@@ -1582,126 +1600,112 @@
       }
 
       function formatDateTime(isoStr) {
-        if (!isoStr) return 'БЕЗ СРОКА';
-        var d = new Date(isoStr);
-        if (isNaN(d.getTime())) return isoStr;
-        return (
-          pad2(d.getDate()) + '.' +
-          pad2(d.getMonth() + 1) + '.' +
-          d.getFullYear() + ' // ' +
-          pad2(d.getHours()) + ':' +
-          pad2(d.getMinutes())
-        );
+        if (!isoStr) return 'БЕЗ ДЕДЛАЙНА';
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) return String(isoStr);
+        return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()} // ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
       }
 
       function formatDateOnly(dateStr) {
         if (!dateStr) return '—';
-        var parts = String(dateStr).split('-');
+        const parts = String(dateStr).split('-');
         if (parts.length === 3) {
-          return parts[2] + '.' + parts[1] + '.' + parts[0];
+          return `${parts[2]}.${parts[1]}.${parts[0]}`;
         }
-        return dateStr;
+        return String(dateStr);
       }
 
-      function isUrgentTask(task) {
-        if (task.done || !task.deadline) return false;
-        var targetMs = new Date(task.deadline).getTime();
-        if (isNaN(targetMs)) return false;
-        return (targetMs - Date.now()) <= 24 * 3600 * 1000;
+      function getTaskDeadlineBadge(task) {
+        if (task.status === 'done' || !task.deadline) return null;
+        const targetMs = new Date(task.deadline).getTime();
+        if (isNaN(targetMs)) return null;
+        const diffMs = targetMs - Date.now();
+        if (diffMs < 0) return { label: 'ПРОСРОЧЕНО', urgent: true };
+        if (diffMs <= 24 * 3600 * 1000) return { label: 'СКОРО', urgent: true };
+        return null;
       }
 
       function normalizeUrl(raw) {
-        var trimmed = String(raw || '').trim();
+        const trimmed = String(raw || '').trim();
         if (!trimmed) return '';
-        return /^https?:\/\//i.test(trimmed) ? trimmed : 'https://' + trimmed;
+        return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
       }
 
       function extractDomain(raw) {
         try {
-          var u = new URL(normalizeUrl(raw));
+          const u = new URL(normalizeUrl(raw));
           return u.hostname.replace(/^www\./i, '');
         } catch (e) {
-          return String(raw || '').replace(/^https?:\/\//i, '').split('/')[0];
+          return String(raw || '').replace(/^https?:\/\//i, '').split('/')[0] || '—';
         }
       }
 
       function formatCoords(lat, lng) {
-        var nLat = Number(lat);
-        var nLng = Number(lng);
+        const nLat = Number(lat);
+        const nLng = Number(lng);
         if (isNaN(nLat) || isNaN(nLng)) return '—';
-        var latDir = nLat >= 0 ? 'N' : 'S';
-        var lngDir = nLng >= 0 ? 'E' : 'W';
-        return Math.abs(nLat).toFixed(4) + '° ' + latDir + ' / ' + Math.abs(nLng).toFixed(4) + '° ' + lngDir;
+        const latDir = nLat >= 0 ? 'N' : 'S';
+        const lngDir = nLng >= 0 ? 'E' : 'W';
+        return `${Math.abs(nLat).toFixed(4)}° ${latDir} / ${Math.abs(nLng).toFixed(4)}° ${lngDir}`;
       }
 
       function calcDaysRemaining(targetDateStr) {
-        var today = new Date();
+        const today = new Date();
         today.setHours(0, 0, 0, 0);
-        var parts = String(targetDateStr || '').split('-');
-        if (parts.length !== 3) return 0;
-        var target = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        const parts = String(targetDateStr || '').split('-');
+        if (parts.length !== 3) return null;
+        const target = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        if (isNaN(target.getTime())) return null;
         target.setHours(0, 0, 0, 0);
         return Math.round((target.getTime() - today.getTime()) / (24 * 3600 * 1000));
       }
 
       function pluralizeSubs(n) {
-        var mod100 = Math.abs(n) % 100;
-        var mod10 = mod100 % 10;
+        const mod100 = Math.abs(n) % 100;
+        const mod10 = mod100 % 10;
         if (mod100 > 10 && mod100 < 20) return 'ПОДПИСОК';
         if (mod10 === 1) return 'ПОДПИСКА';
         if (mod10 >= 2 && mod10 <= 4) return 'ПОДПИСКИ';
         return 'ПОДПИСОК';
       }
 
-      function showToast(message) {
-        var el = document.getElementById('toast');
+      function showToast(message, isError = false) {
+        const el = document.getElementById('toast');
         if (!el) return;
         el.textContent = message;
-        el.classList.add('is-visible');
+        el.className = 'toast is-visible' + (isError ? ' is-error' : '');
         if (appState.toastTimer) clearTimeout(appState.toastTimer);
-        appState.toastTimer = setTimeout(function () {
+        appState.toastTimer = setTimeout(() => {
           el.classList.remove('is-visible');
-        }, 1900);
+        }, isError ? 3200 : 2000);
       }
 
-      function showRuntimeError(msg) {
-        var banner = document.getElementById('error-banner');
-        if (!banner) return;
-        banner.textContent = 'SYS ERROR // ' + msg;
-        banner.classList.add('is-visible');
-      }
-
-      /* ---------------------------------------------------------
-         7. ЖИВЫЕ ЧАСЫ В ШАПКЕ (ИНИЦИАЛИЗАЦИЯ СРАЗУ + 1 СЕК)
-         --------------------------------------------------------- */
       function updateLiveClock() {
-        var clockEl = document.getElementById('live-clock');
+        const clockEl = document.getElementById('live-clock');
         if (!clockEl) return;
-        var now = new Date();
-        clockEl.textContent =
-          pad2(now.getHours()) + ':' +
-          pad2(now.getMinutes()) + ':' +
-          pad2(now.getSeconds());
+        const now = new Date();
+        clockEl.textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
       }
 
       /* ---------------------------------------------------------
-         8. РЕНДЕР НАВИГАЦИИ И МОДУЛЕЙ
+         5. РЕНДЕР НАВИГАЦИИ И ВСЕХ 7 МОДУЛЕЙ
          --------------------------------------------------------- */
       function renderTabs() {
-        var nav = document.getElementById('tabs-nav');
+        const nav = document.getElementById('tabs-nav');
         if (!nav) return;
 
-        nav.innerHTML = MODULES.map(function (mod) {
-          var activeClass = mod.id === appState.activeModule ? ' is-active' : '';
+        nav.innerHTML = MODULES.map((mod) => {
+          const activeClass = mod.id === appState.activeModule ? ' is-active' : '';
           return (
-            '<button type="button" class="tab-btn' + activeClass + '" data-tab="' + mod.id + '">' +
-              '<span class="tab-code">' + mod.code + '</span>' +
-              '<span>' + mod.nav + '</span>' +
-            '</button>'
+            `<button type="button" class="tab-btn${activeClass}" data-tab="${mod.id}">` +
+              `<span class="tab-dot" aria-hidden="true"></span>` +
+              `<span class="tab-code">${mod.code}</span>` +
+              `<span>${mod.nav}</span>` +
+            `</button>`
           );
         }).join('');
 
-        var activeBtn = nav.querySelector('.tab-btn.is-active');
+        const activeBtn = nav.querySelector('.tab-btn.is-active');
         if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
           try {
             activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
@@ -1711,254 +1715,318 @@
 
       function renderSectionHead(mod, countLabel) {
         return (
-          '<section class="section-head">' +
-            '<div>' +
-              '<div class="section-eyebrow">' + mod.eyebrow + '</div>' +
-              '<h2 class="section-title">' + mod.title + '</h2>' +
-            '</div>' +
-            '<div class="section-meta">' +
-              '<div class="section-index">' + mod.code + '</div>' +
-              '<div class="section-count">' + countLabel + '</div>' +
-            '</div>' +
-          '</section>'
+          `<section class="section-head">` +
+            `<div>` +
+              `<div class="section-eyebrow">${mod.eyebrow}</div>` +
+              `<h2 class="section-title">${mod.title}</h2>` +
+            `</div>` +
+            `<div class="section-meta">` +
+              `<div class="section-index">${mod.code}</div>` +
+              `<div class="section-count">${countLabel}</div>` +
+            `</div>` +
+          `</section>`
         );
       }
 
-      function renderEmpty(text) {
+      function renderLoadingState() {
         return (
-          '<div class="empty-state">' +
-            '<div class="empty-code">[ ПУСТО // 00 ]</div>' +
-            '<p class="empty-text">' + escapeHtml(text) + '</p>' +
-          '</div>'
+          `<div class="state-box">` +
+            `<div class="state-code">` +
+              `<span class="status-dot is-syncing" aria-hidden="true"></span>` +
+              `<span>ЗАГРУЗКА ДАННЫХ...</span>` +
+            `</div>` +
+            `<div class="state-sub">ПОДКЛЮЧЕНИЕ К СЕРВЕРУ RENDER</div>` +
+            `<div class="loading-bar" aria-hidden="true"></div>` +
+          `</div>`
+        );
+      }
+
+      function renderEmptyState() {
+        return (
+          `<div class="state-box">` +
+            `<div class="state-code">НЕТ ЗАПИСЕЙ // НАЖМИТЕ +</div>` +
+          `</div>`
         );
       }
 
       /* 01. ЗАДАЧИ */
       function renderTasks(mod) {
-        var allTasks = appState.data.tasks;
-        var activeCount = allTasks.filter(function (t) { return !t.done; }).length;
-        var filtered = allTasks.filter(function (t) {
-          if (appState.taskFilter === 'active') return !t.done;
-          if (appState.taskFilter === 'done') return t.done;
-          return true;
-        });
+        const allTasks = appState.data.tasks;
+        const activeCount = allTasks.filter((t) => t.status !== 'done').length;
 
-        // Невыполненные сверху
-        filtered = filtered.slice().sort(function (a, b) {
-          return Number(a.done) - Number(b.done);
-        });
+        const filtered = allTasks
+          .filter((t) => {
+            if (appState.taskFilter === 'active') return t.status !== 'done';
+            if (appState.taskFilter === 'done') return t.status === 'done';
+            return true;
+          })
+          .slice()
+          .sort((a, b) => Number(a.status === 'done') - Number(b.status === 'done'));
 
-        var subBar =
-          '<div class="sub-bar">' +
-            '<div class="sub-bar-label">АКТИВНЫХ: <strong>' + activeCount + '</strong> // ВСЕГО: <strong>' + allTasks.length + '</strong></div>' +
-            '<div class="filter-group" role="group" aria-label="Фильтр задач">' +
-              '<button type="button" class="filter-btn' + (appState.taskFilter === 'all' ? ' is-active' : '') + '" data-task-filter="all">ВСЕ</button>' +
-              '<button type="button" class="filter-btn' + (appState.taskFilter === 'active' ? ' is-active' : '') + '" data-task-filter="active">В РАБОТЕ</button>' +
-              '<button type="button" class="filter-btn' + (appState.taskFilter === 'done' ? ' is-active' : '') + '" data-task-filter="done">ГОТОВО</button>' +
-            '</div>' +
-          '</div>';
+        const subBar =
+          `<div class="sub-bar">` +
+            `<div class="sub-bar-label">АКТИВНЫХ: <strong>${activeCount}</strong> // ВСЕГО: <strong>${allTasks.length}</strong></div>` +
+            `<div class="filter-group" role="group" aria-label="Фильтр задач">` +
+              `<button type="button" class="filter-btn${appState.taskFilter === 'all' ? ' is-active' : ''}" data-task-filter="all">ВСЕ</button>` +
+              `<button type="button" class="filter-btn${appState.taskFilter === 'active' ? ' is-active' : ''}" data-task-filter="active">В РАБОТЕ</button>` +
+              `<button type="button" class="filter-btn${appState.taskFilter === 'done' ? ' is-active' : ''}" data-task-filter="done">ГОТОВО</button>` +
+            `</div>` +
+          `</div>`;
 
-        var bodyHtml = filtered.length === 0
-          ? renderEmpty('В этом фильтре задач нет. Нажмите «+», чтобы создать новую задачу.')
-          : '<div class="item-list">' + filtered.map(function (task) {
-              var urgent = isUrgentTask(task);
-              var checkIcon = task.done
-                ? '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="3 8.5 6.5 12 13 4.5"></polyline></svg>'
-                : '';
+        let bodyHtml = '';
+        if (appState.initialLoading) {
+          bodyHtml = renderLoadingState();
+        } else if (filtered.length === 0) {
+          bodyHtml = renderEmptyState();
+        } else {
+          bodyHtml = '<div class="item-list">' + filtered.map((task) => {
+            const isDone = task.status === 'done';
+            const badge = getTaskDeadlineBadge(task);
+            const checkIcon = isDone
+              ? '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="3 8.5 6.5 12 13 4.5"></polyline></svg>'
+              : '';
 
-              return (
-                '<article class="item-card task-row' + (task.done ? ' is-done' : '') + '">' +
-                  '<button type="button" class="task-check' + (task.done ? ' is-checked' : '') + '" data-action="toggle-task" data-id="' + escapeHtml(task.id) + '" aria-label="Переключить статус задачи">' +
-                    checkIcon +
-                  '</button>' +
-                  '<div class="task-body">' +
-                    '<p class="task-title">' + escapeHtml(task.title) + '</p>' +
-                    '<div class="task-meta">' +
-                      '<span class="mono-date' + (urgent ? ' is-urgent' : '') + '">' + formatDateTime(task.deadline) + '</span>' +
-                      (urgent ? '<span class="badge-urgent">СРОЧНО</span>' : '') +
-                    '</div>' +
-                  '</div>' +
-                  '<button type="button" class="btn-delete" data-action="delete" data-module="tasks" data-id="' + escapeHtml(task.id) + '" aria-label="Удалить задачу">×</button>' +
-                '</article>'
-              );
-            }).join('') + '</div>';
+            return (
+              `<article class="item-card task-row${isDone ? ' is-done' : ''}">` +
+                `<button type="button" class="task-check${isDone ? ' is-checked' : ''}" data-action="toggle-task" data-id="${escapeHtml(task.id)}" data-status="${escapeHtml(task.status)}" aria-label="Переключить статус задачи">` +
+                  checkIcon +
+                `</button>` +
+                `<div class="task-body">` +
+                  `<p class="task-title">${escapeHtml(task.title)}</p>` +
+                  `<div class="task-meta">` +
+                    `<span class="mono-meta${badge ? ' is-urgent' : ''}">${formatDateTime(task.deadline)}</span>` +
+                    (badge ? `<span class="badge-accent">${badge.label}</span>` : '') +
+                  `</div>` +
+                `</div>` +
+                `<button type="button" class="btn-delete" data-action="delete" data-module="tasks" data-id="${escapeHtml(task.id)}" aria-label="Удалить задачу">×</button>` +
+              `</article>`
+            );
+          }).join('') + '</div>';
+        }
 
-        return renderSectionHead(mod, 'АКТИВНЫХ: ' + pad2(activeCount)) + subBar + bodyHtml;
+        return renderSectionHead(mod, `АКТИВНЫХ: ${pad2(activeCount)}`) + subBar + bodyHtml;
       }
 
       /* 02. ЗАМЕТКИ */
       function renderNotes(mod) {
-        var notes = appState.data.notes;
-        var bodyHtml = notes.length === 0
-          ? renderEmpty('Заметок пока нет. Нажмите «+», чтобы зафиксировать мысль.')
-          : '<div class="item-list">' + notes.map(function (note, idx) {
-              return (
-                '<article class="item-card">' +
-                  '<div class="note-head">' +
-                    '<div class="note-index-line"><strong>#' + pad2(idx + 1) + '</strong> // ' + formatDateOnly(note.createdAt) + '</div>' +
-                    '<button type="button" class="btn-delete" data-action="delete" data-module="notes" data-id="' + escapeHtml(note.id) + '" aria-label="Удалить заметку">×</button>' +
-                  '</div>' +
-                  '<p class="note-body">' + escapeHtml(note.text) + '</p>' +
-                '</article>'
-              );
-            }).join('') + '</div>';
+        const notes = appState.data.notes;
+        let bodyHtml = '';
 
-        return renderSectionHead(mod, 'ЗАПИСЕЙ: ' + pad2(notes.length)) + bodyHtml;
+        if (appState.initialLoading) {
+          bodyHtml = renderLoadingState();
+        } else if (notes.length === 0) {
+          bodyHtml = renderEmptyState();
+        } else {
+          bodyHtml = '<div class="item-list">' + notes.map((note, idx) => (
+            `<article class="item-card">` +
+              `<div class="note-head">` +
+                `<div class="note-index"><strong>#${pad2(idx + 1)}</strong> // ID:${escapeHtml(note.id)}</div>` +
+                `<button type="button" class="btn-delete" data-action="delete" data-module="notes" data-id="${escapeHtml(note.id)}" aria-label="Удалить заметку">×</button>` +
+              `</div>` +
+              `<p class="note-body">${escapeHtml(note.text)}</p>` +
+            `</article>`
+          )).join('') + '</div>';
+        }
+
+        return renderSectionHead(mod, `ЗАПИСЕЙ: ${pad2(notes.length)}`) + bodyHtml;
       }
 
       /* 03. ПОДПИСКИ */
       function renderSubs(mod) {
-        var subs = appState.data.subs;
-        var total = subs.reduce(function (sum, item) {
-          return sum + (Number(item.amount) || 0);
-        }, 0);
+        const subs = appState.data.subs;
+        const total = subs.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
-        var summaryHtml =
-          '<div class="subs-summary">' +
-            '<div class="subs-summary-label">ИТОГО В МЕСЯЦ // ' + subs.length + ' ' + pluralizeSubs(subs.length) + '</div>' +
-            '<div class="subs-total-row">' +
-              '<span class="subs-total-num">' + total.toFixed(2) + '</span>' +
-              '<span class="subs-total-cur">BYN</span>' +
-            '</div>' +
-          '</div>';
+        const summaryHtml =
+          `<div class="subs-summary">` +
+            `<div class="subs-summary-label">ИТОГО В МЕСЯЦ // ${subs.length} ${pluralizeSubs(subs.length)}</div>` +
+            `<div class="subs-total-row">` +
+              `<span class="subs-total-num">${total.toFixed(2)}</span>` +
+              `<span class="subs-total-cur">BYN / РУБ.</span>` +
+            `</div>` +
+          `</div>`;
 
-        var bodyHtml = subs.length === 0
-          ? renderEmpty('Подписок пока нет. Добавьте регулярный платёж через «+».')
-          : '<div class="item-list">' + subs.map(function (sub) {
-              return (
-                '<article class="item-card sub-row">' +
-                  '<div class="sub-info">' +
-                    '<h3 class="sub-name">' + escapeHtml(sub.name) + '</h3>' +
-                    '<div class="sub-day">' + escapeHtml(sub.billingDay) + ' ЧИСЛА</div>' +
-                  '</div>' +
-                  '<div class="sub-right">' +
-                    '<div class="sub-price">' + Number(sub.amount).toFixed(2) + '<span>BYN</span></div>' +
-                    '<button type="button" class="btn-delete" data-action="delete" data-module="subs" data-id="' + escapeHtml(sub.id) + '" aria-label="Удалить подписку">×</button>' +
-                  '</div>' +
-                '</article>'
-              );
-            }).join('') + '</div>';
+        let bodyHtml = '';
+        if (appState.initialLoading) {
+          bodyHtml = renderLoadingState();
+        } else if (subs.length === 0) {
+          bodyHtml = renderEmptyState();
+        } else {
+          bodyHtml = '<div class="item-list">' + subs.map((sub) => (
+            `<article class="item-card sub-row">` +
+              `<div class="sub-info">` +
+                `<h3 class="sub-name">${escapeHtml(sub.title)}</h3>` +
+                `<div class="sub-day">${escapeHtml(sub.pay_day)} ЧИСЛА</div>` +
+              `</div>` +
+              `<div class="sub-right">` +
+                `<div class="sub-price">${Number(sub.amount || 0).toFixed(2)}<span>BYN</span></div>` +
+                `<button type="button" class="btn-delete" data-action="delete" data-module="subs" data-id="${escapeHtml(sub.id)}" aria-label="Удалить подписку">×</button>` +
+              `</div>` +
+            `</article>`
+          )).join('') + '</div>';
+        }
 
-        return renderSectionHead(mod, 'АКТИВНО: ' + pad2(subs.length)) + summaryHtml + bodyHtml;
+        return renderSectionHead(mod, `АКТИВНО: ${pad2(subs.length)}`) + summaryHtml + bodyHtml;
       }
 
       /* 04. ССЫЛКИ */
       function renderLinks(mod) {
-        var links = appState.data.links;
-        var bodyHtml = links.length === 0
-          ? renderEmpty('Сохранённых ссылок пока нет. Добавьте ресурс через «+».')
-          : '<div class="item-list">' + links.map(function (link) {
-              var href = normalizeUrl(link.url);
-              var domain = extractDomain(href);
-              return (
-                '<article class="item-card link-row">' +
-                  '<div class="link-info">' +
-                    '<h3 class="link-title">' + escapeHtml(link.title) + '</h3>' +
-                    '<div class="link-domain">' + escapeHtml(domain) + '</div>' +
-                  '</div>' +
-                  '<div class="link-actions">' +
-                    '<a class="btn-square-open" href="' + escapeHtml(href) + '" target="_blank" rel="noopener noreferrer" aria-label="Открыть ссылку">↗</a>' +
-                    '<button type="button" class="btn-delete" data-action="delete" data-module="links" data-id="' + escapeHtml(link.id) + '" aria-label="Удалить ссылку">×</button>' +
-                  '</div>' +
-                '</article>'
-              );
-            }).join('') + '</div>';
+        const links = appState.data.links;
+        let bodyHtml = '';
 
-        return renderSectionHead(mod, 'ССЫЛОК: ' + pad2(links.length)) + bodyHtml;
+        if (appState.initialLoading) {
+          bodyHtml = renderLoadingState();
+        } else if (links.length === 0) {
+          bodyHtml = renderEmptyState();
+        } else {
+          bodyHtml = '<div class="item-list">' + links.map((link) => {
+            const safeUrl = normalizeUrl(link.url);
+            const domain = extractDomain(safeUrl);
+            return (
+              `<article class="item-card link-row">` +
+                `<div class="link-info">` +
+                  `<h3 class="link-title">${escapeHtml(link.title)}</h3>` +
+                  `<div class="link-domain">${escapeHtml(domain)}</div>` +
+                `</div>` +
+                `<div class="link-actions">` +
+                  `<button type="button" class="btn-square-open" data-action="open-link" data-url="${escapeHtml(safeUrl)}" aria-label="Открыть ссылку">↗</button>` +
+                  `<button type="button" class="btn-delete" data-action="delete" data-module="links" data-id="${escapeHtml(link.id)}" aria-label="Удалить ссылку">×</button>` +
+                `</div>` +
+              `</article>`
+            );
+          }).join('') + '</div>';
+        }
+
+        return renderSectionHead(mod, `ССЫЛОК: ${pad2(links.length)}`) + bodyHtml;
       }
 
       /* 05. ДНЕВНИК */
       function renderDiary(mod) {
-        var entries = appState.data.diary;
-        var bodyHtml = entries.length === 0
-          ? renderEmpty('Бортовой журнал пуст. Добавьте запись через «+».')
-          : '<div class="item-list">' + entries.map(function (entry) {
-              var isStrong = entry.mood === '[ФОКУС]' || entry.mood === '[ЭНЕРГИЯ]';
-              return (
-                '<article class="item-card">' +
-                  '<div class="diary-head">' +
-                    '<div class="diary-tags">' +
-                      '<span class="mono-date">' + formatDateOnly(entry.date) + '</span>' +
-                      '<span class="mood-tag' + (isStrong ? ' is-strong' : '') + '">' + escapeHtml(entry.mood) + '</span>' +
-                    '</div>' +
-                    '<button type="button" class="btn-delete" data-action="delete" data-module="diary" data-id="' + escapeHtml(entry.id) + '" aria-label="Удалить запись">×</button>' +
-                  '</div>' +
-                  '<p class="note-body">' + escapeHtml(entry.text) + '</p>' +
-                '</article>'
-              );
-            }).join('') + '</div>';
+        const entries = appState.data.diary;
+        let bodyHtml = '';
 
-        return renderSectionHead(mod, 'ЗАПИСЕЙ: ' + pad2(entries.length)) + bodyHtml;
+        if (appState.initialLoading) {
+          bodyHtml = renderLoadingState();
+        } else if (entries.length === 0) {
+          bodyHtml = renderEmptyState();
+        } else {
+          bodyHtml = '<div class="item-list">' + entries.map((entry) => {
+            const moodVal = String(entry.mood || '—');
+            const isStrong = moodVal === '[ФОКУС]' || moodVal === '[ЭНЕРГИЯ]';
+            return (
+              `<article class="item-card">` +
+                `<div class="diary-head">` +
+                  `<div class="diary-tags">` +
+                    `<span class="mono-meta">${escapeHtml(entry.date_str || '—')}</span>` +
+                    `<span class="mood-tag${isStrong ? ' is-strong' : ''}">${escapeHtml(moodVal)}</span>` +
+                  `</div>` +
+                  `<button type="button" class="btn-delete" data-action="delete" data-module="diary" data-id="${escapeHtml(entry.id)}" aria-label="Удалить запись">×</button>` +
+                `</div>` +
+                `<p class="note-body">${escapeHtml(entry.text)}</p>` +
+              `</article>`
+            );
+          }).join('') + '</div>';
+        }
+
+        return renderSectionHead(mod, `ЗАПИСЕЙ: ${pad2(entries.length)}`) + bodyHtml;
       }
 
       /* 06. ГЕО */
       function renderGeo(mod) {
-        var points = appState.data.geo;
-        var bodyHtml = points.length === 0
-          ? renderEmpty('Геоточек пока нет. Сохраните локацию через «+».')
-          : '<div class="item-list">' + points.map(function (pt, idx) {
-              var mapUrl = 'https://www.google.com/maps?q=' + encodeURIComponent(pt.lat) + ',' + encodeURIComponent(pt.lng);
-              return (
-                '<article class="item-card">' +
-                  '<div class="geo-top">' +
-                    '<div>' +
-                      '<div class="geo-code">LOC_' + pad2(idx + 1) + '</div>' +
-                      '<h3 class="geo-name">' + escapeHtml(pt.name) + '</h3>' +
-                      '<div class="geo-coords">' + formatCoords(pt.lat, pt.lng) + '</div>' +
-                    '</div>' +
-                    '<button type="button" class="btn-delete" data-action="delete" data-module="geo" data-id="' + escapeHtml(pt.id) + '" aria-label="Удалить точку">×</button>' +
-                  '</div>' +
-                  '<div class="geo-footer">' +
-                    '<a class="btn-map" href="' + mapUrl + '" target="_blank" rel="noopener noreferrer">КАРТА ↗</a>' +
-                  '</div>' +
-                '</article>'
-              );
-            }).join('') + '</div>';
+        const points = appState.data.geo;
+        let bodyHtml = '';
 
-        return renderSectionHead(mod, 'ТОЧЕК: ' + pad2(points.length)) + bodyHtml;
+        if (appState.initialLoading) {
+          bodyHtml = renderLoadingState();
+        } else if (points.length === 0) {
+          bodyHtml = renderEmptyState();
+        } else {
+          bodyHtml = '<div class="item-list">' + points.map((pt, idx) => {
+            const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(pt.lat)},${encodeURIComponent(pt.lng)}`;
+            return (
+              `<article class="item-card">` +
+                `<div class="geo-top">` +
+                  `<div class="geo-clickable" data-action="open-link" data-url="${escapeHtml(mapUrl)}">` +
+                    `<div class="geo-code">LOC_${pad2(idx + 1)}</div>` +
+                    `<h3 class="geo-name">${escapeHtml(pt.text)}</h3>` +
+                    `<div class="geo-coords">${formatCoords(pt.lat, pt.lng)}</div>` +
+                  `</div>` +
+                  `<button type="button" class="btn-delete" data-action="delete" data-module="geo" data-id="${escapeHtml(pt.id)}" aria-label="Удалить точку">×</button>` +
+                `</div>` +
+                `<div class="geo-footer">` +
+                  `<button type="button" class="btn-map" data-action="open-link" data-url="${escapeHtml(mapUrl)}">ОТКРЫТЬ КАРТУ ↗</button>` +
+                `</div>` +
+              `</article>`
+            );
+          }).join('') + '</div>';
+        }
+
+        return renderSectionHead(mod, `ТОЧЕК: ${pad2(points.length)}`) + bodyHtml;
       }
 
       /* 07. СЧЁТЧИКИ */
       function renderCountdowns(mod) {
-        var items = appState.data.countdowns.slice().sort(function (a, b) {
-          return calcDaysRemaining(a.targetDate) - calcDaysRemaining(b.targetDate);
+        const items = appState.data.countdowns.slice().sort((a, b) => {
+          const da = calcDaysRemaining(a.target_date);
+          const db = calcDaysRemaining(b.target_date);
+          return (da === null ? 99999 : da) - (db === null ? 99999 : db);
         });
 
-        var bodyHtml = items.length === 0
-          ? renderEmpty('Счётчиков пока нет. Добавьте целевую дату через «+».')
-          : '<div class="item-list">' + items.map(function (cd) {
-              var days = calcDaysRemaining(cd.targetDate);
-              var isSoon = days <= 7;
-              var displayNum = days < 0 ? String(Math.abs(days)) : (days < 10 ? pad2(days) : String(days));
-              var unitText = days === 0 ? 'СЕГОДНЯ' : (days < 0 ? 'ДН. НАЗАД' : 'ДН.');
+        let bodyHtml = '';
+        if (appState.initialLoading) {
+          bodyHtml = renderLoadingState();
+        } else if (items.length === 0) {
+          bodyHtml = renderEmptyState();
+        } else {
+          bodyHtml = '<div class="item-list">' + items.map((cd) => {
+            const days = calcDaysRemaining(cd.target_date);
+            let displayNum = '—';
+            let unitText = 'ДАТА';
+            let isSoon = false;
 
-              return (
-                '<article class="cd-card">' +
-                  '<div class="cd-left">' +
-                    '<div>' +
-                      '<div class="cd-target">ЦЕЛЬ // ' + formatDateOnly(cd.targetDate) + '</div>' +
-                      '<h3 class="cd-title">' + escapeHtml(cd.title) + '</h3>' +
-                    '</div>' +
-                    '<button type="button" class="cd-delete-link" data-action="delete" data-module="countdowns" data-id="' + escapeHtml(cd.id) + '">[ УДАЛИТЬ × ]</button>' +
-                  '</div>' +
-                  '<div class="cd-right">' +
-                    '<div class="cd-number' + (isSoon ? ' is-soon' : '') + '">' + displayNum + '</div>' +
-                    '<div class="cd-unit' + (isSoon ? ' is-soon' : '') + '">' + unitText + '</div>' +
-                  '</div>' +
-                '</article>'
-              );
-            }).join('') + '</div>';
+            if (days !== null) {
+              if (days === 0) {
+                displayNum = '00';
+                unitText = 'СЕГОДНЯ';
+                isSoon = true;
+              } else if (days < 0) {
+                displayNum = String(Math.abs(days));
+                unitText = `ПРОШЛО ${Math.abs(days)} ДН.`;
+                isSoon = true;
+              } else {
+                displayNum = days < 10 ? pad2(days) : String(days);
+                unitText = 'ОСТАЛОСЬ ДН.';
+                isSoon = days <= 7;
+              }
+            }
 
-        return renderSectionHead(mod, 'СОБЫТИЙ: ' + pad2(items.length)) + bodyHtml;
+            return (
+              `<article class="cd-card">` +
+                `<div class="cd-left">` +
+                  `<div>` +
+                    `<div class="cd-target">ЦЕЛЬ // ${formatDateOnly(cd.target_date)}</div>` +
+                    `<h3 class="cd-title">${escapeHtml(cd.title)}</h3>` +
+                  `</div>` +
+                  `<button type="button" class="cd-delete-link" data-action="delete" data-module="countdowns" data-id="${escapeHtml(cd.id)}">[ УДАЛИТЬ × ]</button>` +
+                `</div>` +
+                `<div class="cd-right">` +
+                  `<div class="cd-number${isSoon ? ' is-soon' : ''}">${displayNum}</div>` +
+                  `<div class="cd-unit${isSoon ? ' is-soon' : ''}">${unitText}</div>` +
+                `</div>` +
+              `</article>`
+            );
+          }).join('') + '</div>';
+        }
+
+        return renderSectionHead(mod, `СОБЫТИЙ: ${pad2(items.length)}`) + bodyHtml;
       }
 
       function renderApp() {
         renderTabs();
-        var mod = MODULES.find(function (m) { return m.id === appState.activeModule; }) || MODULES[0];
-        var main = document.getElementById('main-area');
+        const mod = MODULES.find((m) => m.id === appState.activeModule) || MODULES[0];
+        const main = document.getElementById('main-area');
         if (!main) return;
 
-        var html = '';
+        let html = '';
         if (mod.id === 'tasks') html = renderTasks(mod);
         else if (mod.id === 'notes') html = renderNotes(mod);
         else if (mod.id === 'subs') html = renderSubs(mod);
@@ -1971,10 +2039,10 @@
       }
 
       /* ---------------------------------------------------------
-         9. АДАПТИВНАЯ ШТОРКА ДОБАВЛЕНИЯ (BOTTOM SHEET)
+         6. ШТОРКА ДОБАВЛЕНИЯ (BOTTOM SHEET)
          --------------------------------------------------------- */
-      function setFormNotice(msg, isError) {
-        var box = document.getElementById('form-notice');
+      function setFormNotice(msg, isError = false) {
+        const box = document.getElementById('form-notice');
         if (!box) return;
         if (!msg) {
           box.textContent = '';
@@ -1985,114 +2053,126 @@
         box.className = 'form-notice is-visible' + (isError ? ' is-error' : '');
       }
 
+      function setSubmitState(submitting) {
+        appState.isSubmitting = submitting;
+        const btn = document.getElementById('sheet-submit-btn');
+        const label = document.getElementById('sheet-submit-label');
+        if (btn) btn.disabled = submitting;
+        if (label) label.textContent = submitting ? 'СОХРАНЕНИЕ...' : 'СОХРАНИТЬ';
+      }
+
       function buildModalFields(moduleId) {
         if (moduleId === 'tasks') {
           return (
-            '<div class="field-group">' +
-              '<label class="field-label" for="inp-task-title">НАЗВАНИЕ ЗАДАЧИ *</label>' +
-              '<input id="inp-task-title" name="title" type="text" class="field-input" placeholder="Например: Обновить деплой на Cloudflare" required />' +
-            '</div>' +
-            '<div class="field-group" style="margin-top:14px;">' +
-              '<label class="field-label" for="inp-task-deadline">ДЕДЛАЙН (ДАТА И ВРЕМЯ) *</label>' +
-              '<input id="inp-task-deadline" name="deadline" type="datetime-local" class="field-input is-mono" value="' + relativeDateTimeISO(24) + '" required />' +
-            '</div>'
+            `<div class="field-group">` +
+              `<label class="field-label" for="inp-task-title">НАЗВАНИЕ ЗАДАЧИ *</label>` +
+              `<input id="inp-task-title" name="title" type="text" class="field-input" placeholder="Например: Позвонить в студию" required />` +
+            `</div>` +
+            `<div class="field-group" style="margin-top:14px;">` +
+              `<label class="field-label" for="inp-task-deadline">ДЕДЛАЙН (НЕОБЯЗАТЕЛЬНО)</label>` +
+              `<input id="inp-task-deadline" name="deadline" type="datetime-local" class="field-input is-mono" />` +
+            `</div>`
           );
         }
 
         if (moduleId === 'notes') {
           return (
-            '<div class="field-group">' +
-              '<label class="field-label" for="inp-note-text">ТЕКСТ ЗАМЕТКИ *</label>' +
-              '<textarea id="inp-note-text" name="text" class="field-textarea" placeholder="Запишите мысль, идею или короткую заметку..." required></textarea>' +
-            '</div>'
+            `<div class="field-group">` +
+              `<label class="field-label" for="inp-note-text">ТЕКСТ ЗАМЕТКИ *</label>` +
+              `<textarea id="inp-note-text" name="text" class="field-textarea" placeholder="Запишите мысль, идею или короткую заметку..." required></textarea>` +
+            `</div>`
           );
         }
 
         if (moduleId === 'subs') {
           return (
-            '<div class="field-group">' +
-              '<label class="field-label" for="inp-sub-name">НАЗВАНИЕ СЕРВИСА *</label>' +
-              '<input id="inp-sub-name" name="name" type="text" class="field-input" placeholder="Например: Spotify, VPN, Notion" required />' +
-            '</div>' +
-            '<div class="field-row-2" style="margin-top:14px;">' +
-              '<div class="field-group">' +
-                '<label class="field-label" for="inp-sub-amount">ЦЕНА (BYN) *</label>' +
-                '<input id="inp-sub-amount" name="amount" type="number" step="0.01" min="0.01" class="field-input is-mono" placeholder="15.00" required />' +
-              '</div>' +
-              '<div class="field-group">' +
-                '<label class="field-label" for="inp-sub-day">ДЕНЬ (1–31) *</label>' +
-                '<input id="inp-sub-day" name="billingDay" type="number" min="1" max="31" class="field-input is-mono" placeholder="15" required />' +
-              '</div>' +
-            '</div>'
+            `<div class="field-group">` +
+              `<label class="field-label" for="inp-sub-title">НАЗВАНИЕ ПОДПИСКИ *</label>` +
+              `<input id="inp-sub-title" name="title" type="text" class="field-input" placeholder="Например: Telegram Premium, Яндекс Плюс" required />` +
+            `</div>` +
+            `<div class="field-row-2" style="margin-top:14px;">` +
+              `<div class="field-group">` +
+                `<label class="field-label" for="inp-sub-amount">СУММА (BYN / РУБ.) *</label>` +
+                `<input id="inp-sub-amount" name="amount" type="number" step="0.01" min="0.01" class="field-input is-mono" placeholder="15.00" required />` +
+              `</div>` +
+              `<div class="field-group">` +
+                `<label class="field-label" for="inp-sub-day">ДЕНЬ СПИСАНИЯ (1–31) *</label>` +
+                `<input id="inp-sub-day" name="pay_day" type="number" min="1" max="31" class="field-input is-mono" placeholder="15" required />` +
+              `</div>` +
+            `</div>`
           );
         }
 
         if (moduleId === 'links') {
           return (
-            '<div class="field-group">' +
-              '<label class="field-label" for="inp-link-title">ЗАГОЛОВОК *</label>' +
-              '<input id="inp-link-title" name="title" type="text" class="field-input" placeholder="Например: Документация FastAPI" required />' +
-            '</div>' +
-            '<div class="field-group" style="margin-top:14px;">' +
-              '<label class="field-label" for="inp-link-url">URL-АДРЕС *</label>' +
-              '<input id="inp-link-url" name="url" type="url" class="field-input is-mono" placeholder="https://example.com" required />' +
-            '</div>'
+            `<div class="field-group">` +
+              `<label class="field-label" for="inp-link-title">НАЗВАНИЕ *</label>` +
+              `<input id="inp-link-title" name="title" type="text" class="field-input" placeholder="Например: Документация FastAPI" required />` +
+            `</div>` +
+            `<div class="field-group" style="margin-top:14px;">` +
+              `<label class="field-label" for="inp-link-url">URL-АДРЕС *</label>` +
+              `<input id="inp-link-url" name="url" type="url" class="field-input is-mono" placeholder="https://example.com" required />` +
+            `</div>`
           );
         }
 
         if (moduleId === 'diary') {
           appState.selectedMood = MOOD_TAGS[0];
           return (
-            '<div class="field-group">' +
-              '<span class="field-label">СОСТОЯНИЕ</span>' +
-              '<div class="mood-grid" id="mood-grid">' +
-                MOOD_TAGS.map(function (tag, idx) {
-                  return '<button type="button" class="mood-btn' + (idx === 0 ? ' is-selected' : '') + '" data-mood="' + tag + '">' + tag + '</button>';
-                }).join('') +
-              '</div>' +
-            '</div>' +
-            '<div class="field-group" style="margin-top:14px;">' +
-              '<label class="field-label" for="inp-diary-text">ЗАПИСЬ В БОРТОВОЙ ЖУРНАЛ *</label>' +
-              '<textarea id="inp-diary-text" name="text" class="field-textarea" placeholder="Ключевой итог или наблюдение дня..." required></textarea>' +
-            '</div>'
+            `<div class="field-group">` +
+              `<span class="field-label">СОСТОЯНИЕ</span>` +
+              `<div class="mood-grid" id="mood-grid">` +
+                MOOD_TAGS.map((tag, idx) => (
+                  `<button type="button" class="mood-btn${idx === 0 ? ' is-selected' : ''}" data-mood="${tag}">${tag}</button>`
+                )).join('') +
+              `</div>` +
+            `</div>` +
+            `<div class="field-group" style="margin-top:14px;">` +
+              `<label class="field-label" for="inp-diary-date">ДАТА (ДД.ММ.ГГГГ)</label>` +
+              `<input id="inp-diary-date" name="date_str" type="text" class="field-input is-mono" value="${todayDDMMYYYY()}" />` +
+            `</div>` +
+            `<div class="field-group" style="margin-top:14px;">` +
+              `<label class="field-label" for="inp-diary-text">ЗАПИСЬ В ДНЕВНИК *</label>` +
+              `<textarea id="inp-diary-text" name="text" class="field-textarea" placeholder="Главные мысли или итоги дня..." required></textarea>` +
+            `</div>`
           );
         }
 
         if (moduleId === 'geo') {
           return (
-            '<div class="field-group">' +
-              '<label class="field-label" for="inp-geo-name">НАЗВАНИЕ / ЗАМЕТКА О МЕСТЕ *</label>' +
-              '<input id="inp-geo-name" name="name" type="text" class="field-input" placeholder="Например: Удобное кафе для работы" required />' +
-            '</div>' +
-            '<div class="field-row-2" style="margin-top:14px;">' +
-              '<div class="field-group">' +
-                '<label class="field-label" for="inp-geo-lat">ШИРОТА (LAT) *</label>' +
-                '<input id="inp-geo-lat" name="lat" type="number" step="any" class="field-input is-mono" placeholder="53.9006" required />' +
-              '</div>' +
-              '<div class="field-group">' +
-                '<label class="field-label" for="inp-geo-lng">ДОЛГОТА (LNG) *</label>' +
-                '<input id="inp-geo-lng" name="lng" type="number" step="any" class="field-input is-mono" placeholder="27.5590" required />' +
-              '</div>' +
-            '</div>' +
-            '<div style="margin-top:14px;">' +
-              '<button type="button" id="geo-locate-btn" class="btn-secondary">' +
-                '<span class="status-dot" aria-hidden="true"></span>' +
-                '<span>ОПРЕДЕЛИТЬ МОИ КООРДИНАТЫ</span>' +
-              '</button>' +
-            '</div>'
+            `<div class="field-group">` +
+              `<label class="field-label" for="inp-geo-text">ОПИСАНИЕ МЕСТА *</label>` +
+              `<input id="inp-geo-text" name="text" type="text" class="field-input" placeholder="Например: Тихая кофейня с розетками" required />` +
+            `</div>` +
+            `<div class="field-row-2" style="margin-top:14px;">` +
+              `<div class="field-group">` +
+                `<label class="field-label" for="inp-geo-lat">ШИРОТА (LAT) *</label>` +
+                `<input id="inp-geo-lat" name="lat" type="number" step="any" class="field-input is-mono" placeholder="53.9006" required />` +
+              `</div>` +
+              `<div class="field-group">` +
+                `<label class="field-label" for="inp-geo-lng">ДОЛГОТА (LNG) *</label>` +
+                `<input id="inp-geo-lng" name="lng" type="number" step="any" class="field-input is-mono" placeholder="27.5590" required />` +
+              `</div>` +
+            `</div>` +
+            `<div style="margin-top:14px;">` +
+              `<button type="button" id="geo-locate-btn" class="btn-secondary">` +
+                `<span class="status-dot" aria-hidden="true"></span>` +
+                `<span>ОПРЕДЕЛИТЬ ГЕОПОЗИЦИЮ</span>` +
+              `</button>` +
+            `</div>`
           );
         }
 
         if (moduleId === 'countdowns') {
           return (
-            '<div class="field-group">' +
-              '<label class="field-label" for="inp-cd-title">НАЗВАНИЕ СОБЫТИЯ *</label>' +
-              '<input id="inp-cd-title" name="title" type="text" class="field-input" placeholder="Например: Старт нового проекта" required />' +
-            '</div>' +
-            '<div class="field-group" style="margin-top:14px;">' +
-              '<label class="field-label" for="inp-cd-date">ЦЕЛЕВАЯ ДАТА *</label>' +
-              '<input id="inp-cd-date" name="targetDate" type="date" class="field-input is-mono" value="' + relativeDateISO(10) + '" required />' +
-            '</div>'
+            `<div class="field-group">` +
+              `<label class="field-label" for="inp-cd-title">НАЗВАНИЕ СОБЫТИЯ *</label>` +
+              `<input id="inp-cd-title" name="title" type="text" class="field-input" placeholder="Например: Дедлайн проекта" required />` +
+            `</div>` +
+            `<div class="field-group" style="margin-top:14px;">` +
+              `<label class="field-label" for="inp-cd-date">ЦЕЛЕВАЯ ДАТА *</label>` +
+              `<input id="inp-cd-date" name="target_date" type="date" class="field-input is-mono" value="${relativeDateISO(7)}" required />` +
+            `</div>`
           );
         }
 
@@ -2100,100 +2180,181 @@
       }
 
       function openSheet() {
-        var mod = MODULES.find(function (m) { return m.id === appState.activeModule; }) || MODULES[0];
-        document.getElementById('sheet-title').textContent = '+ ' + mod.code + ' ' + mod.nav;
+        const mod = MODULES.find((m) => m.id === appState.activeModule) || MODULES[0];
+        document.getElementById('sheet-title').textContent = `+ ${mod.code} ${mod.nav}`;
         document.getElementById('sheet-fields').innerHTML = buildModalFields(mod.id);
         setFormNotice('', false);
+        setSubmitState(false);
 
-        var overlay = document.getElementById('sheet-overlay');
+        const overlay = document.getElementById('sheet-overlay');
         overlay.classList.add('is-open');
         overlay.setAttribute('aria-hidden', 'false');
         TelegramBridge.haptic('light');
 
-        setTimeout(function () {
-          var first = document.querySelector('#sheet-fields input, #sheet-fields textarea');
+        setTimeout(() => {
+          const first = document.querySelector('#sheet-fields input, #sheet-fields textarea');
           if (first) first.focus();
         }, 60);
       }
 
       function closeSheet() {
-        var overlay = document.getElementById('sheet-overlay');
+        if (appState.isSubmitting) return;
+        const overlay = document.getElementById('sheet-overlay');
         overlay.classList.remove('is-open');
         overlay.setAttribute('aria-hidden', 'true');
         setFormNotice('', false);
       }
 
-      function handleSheetSubmit(event) {
+      async function handleSheetSubmit(event) {
         event.preventDefault();
+        if (appState.isSubmitting) return;
         setFormNotice('', false);
 
-        var form = event.currentTarget;
-        var fd = new FormData(form);
-        var mod = appState.activeModule;
+        const fd = new FormData(event.currentTarget);
+        const mod = appState.activeModule;
+        let payload = null;
 
         if (mod === 'tasks') {
-          var title = String(fd.get('title') || '').trim();
-          var deadline = String(fd.get('deadline') || '').trim();
+          const title = String(fd.get('title') || '').trim();
+          const deadlineRaw = String(fd.get('deadline') || '').trim();
           if (!title) return setFormNotice('ВВЕДИТЕ НАЗВАНИЕ ЗАДАЧИ', true);
-          if (!deadline) return setFormNotice('УКАЖИТЕ ДЕДЛАЙН', true);
-          DataService.addItem(appState.data, 'tasks', { title: title, deadline: deadline, done: false });
+          payload = {
+            user_id: appState.userId,
+            title,
+            deadline: deadlineRaw || null
+          };
         } else if (mod === 'notes') {
-          var noteText = String(fd.get('text') || '').trim();
-          if (!noteText) return setFormNotice('ВВЕДИТЕ ТЕКСТ ЗАМЕТКИ', true);
-          DataService.addItem(appState.data, 'notes', { text: noteText, createdAt: relativeDateISO(0) });
+          const text = String(fd.get('text') || '').trim();
+          if (!text) return setFormNotice('ВВЕДИТЕ ТЕКСТ ЗАМЕТКИ', true);
+          payload = { user_id: appState.userId, text };
         } else if (mod === 'subs') {
-          var name = String(fd.get('name') || '').trim();
-          var amount = parseFloat(fd.get('amount'));
-          var billingDay = parseInt(fd.get('billingDay'), 10);
-          if (!name) return setFormNotice('ВВЕДИТЕ НАЗВАНИЕ СЕРВИСА', true);
-          if (isNaN(amount) || amount <= 0) return setFormNotice('УКАЖИТЕ КОРРЕКТНУЮ ЦЕНУ В BYN', true);
-          if (isNaN(billingDay) || billingDay < 1 || billingDay > 31) return setFormNotice('ДЕНЬ СПИСАНИЯ: ОТ 1 ДО 31', true);
-          DataService.addItem(appState.data, 'subs', { name: name, amount: amount, billingDay: billingDay });
+          const title = String(fd.get('title') || '').trim();
+          const amount = parseFloat(fd.get('amount'));
+          const pay_day = parseInt(fd.get('pay_day'), 10);
+          if (!title) return setFormNotice('ВВЕДИТЕ НАЗВАНИЕ ПОДПИСКИ', true);
+          if (isNaN(amount) || amount <= 0) return setFormNotice('УКАЖИТЕ КОРРЕКТНУЮ СУММУ', true);
+          if (isNaN(pay_day) || pay_day < 1 || pay_day > 31) return setFormNotice('ДЕНЬ СПИСАНИЯ: ОТ 1 ДО 31', true);
+          payload = { user_id: appState.userId, title, amount, pay_day };
         } else if (mod === 'links') {
-          var linkTitle = String(fd.get('title') || '').trim();
-          var linkUrl = normalizeUrl(fd.get('url'));
-          if (!linkTitle) return setFormNotice('ВВЕДИТЕ ЗАГОЛОВОК ССЫЛКИ', true);
-          if (!linkUrl || linkUrl === 'https://') return setFormNotice('ВВЕДИТЕ КОРРЕКТНЫЙ URL', true);
-          DataService.addItem(appState.data, 'links', { title: linkTitle, url: linkUrl });
+          const title = String(fd.get('title') || '').trim();
+          const url = normalizeUrl(fd.get('url'));
+          if (!title) return setFormNotice('ВВЕДИТЕ НАЗВАНИЕ ССЫЛКИ', true);
+          if (!url || url === 'https://') return setFormNotice('ВВЕДИТЕ КОРРЕКТНЫЙ URL', true);
+          payload = { user_id: appState.userId, url, title };
         } else if (mod === 'diary') {
-          var diaryText = String(fd.get('text') || '').trim();
-          if (!diaryText) return setFormNotice('ВВЕДИТЕ ТЕКСТ ЗАПИСИ', true);
-          DataService.addItem(appState.data, 'diary', {
-            date: relativeDateISO(0),
+          const text = String(fd.get('text') || '').trim();
+          const date_str = String(fd.get('date_str') || '').trim() || todayDDMMYYYY();
+          if (!text) return setFormNotice('ВВЕДИТЕ ТЕКСТ ЗАПИСИ', true);
+          payload = {
+            user_id: appState.userId,
             mood: appState.selectedMood || MOOD_TAGS[0],
-            text: diaryText
-          });
+            text,
+            date_str
+          };
         } else if (mod === 'geo') {
-          var placeName = String(fd.get('name') || '').trim();
-          var lat = parseFloat(fd.get('lat'));
-          var lng = parseFloat(fd.get('lng'));
-          if (!placeName) return setFormNotice('УКАЖИТЕ НАЗВАНИЕ МЕСТА', true);
+          const text = String(fd.get('text') || '').trim();
+          const lat = parseFloat(fd.get('lat'));
+          const lng = parseFloat(fd.get('lng'));
+          if (!text) return setFormNotice('УКАЖИТЕ ОПИСАНИЕ МЕСТА', true);
           if (isNaN(lat) || lat < -90 || lat > 90) return setFormNotice('ШИРОТА ДОЛЖНА БЫТЬ ОТ -90 ДО 90', true);
           if (isNaN(lng) || lng < -180 || lng > 180) return setFormNotice('ДОЛГОТА ДОЛЖНА БЫТЬ ОТ -180 ДО 180', true);
-          DataService.addItem(appState.data, 'geo', { name: placeName, lat: lat, lng: lng });
+          payload = { user_id: appState.userId, text, lat, lng };
         } else if (mod === 'countdowns') {
-          var cdTitle = String(fd.get('title') || '').trim();
-          var targetDate = String(fd.get('targetDate') || '').trim();
-          if (!cdTitle) return setFormNotice('ВВЕДИТЕ НАЗВАНИЕ СОБЫТИЯ', true);
-          if (!targetDate) return setFormNotice('ВЫБЕРИТЕ ЦЕЛЕВУЮ ДАТУ', true);
-          DataService.addItem(appState.data, 'countdowns', { title: cdTitle, targetDate: targetDate });
+          const title = String(fd.get('title') || '').trim();
+          const target_date = String(fd.get('target_date') || '').trim();
+          if (!title) return setFormNotice('ВВЕДИТЕ НАЗВАНИЕ СОБЫТИЯ', true);
+          if (!target_date) return setFormNotice('ВЫБЕРИТЕ ЦЕЛЕВУЮ ДАТУ', true);
+          payload = { user_id: appState.userId, title, target_date };
         }
 
-        closeSheet();
-        renderApp();
-        TelegramBridge.haptic('medium');
-        showToast('ЗАПИСЬ СОХРАНЕНА');
+        if (!payload) return;
+
+        setSubmitState(true);
+        try {
+          await apiRequest(`/${mod}`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          await fetchModule(mod);
+          setConnectionStatus('online');
+          setSubmitState(false);
+          closeSheet();
+          renderApp();
+          TelegramBridge.haptic('medium');
+          showToast('ЗАПИСЬ СОХРАНЕНА');
+        } catch (err) {
+          console.error('Save error:', err);
+          setSubmitState(false);
+          setConnectionStatus('error');
+          setFormNotice('ОШИБКА СОХРАНЕНИЯ НА СЕРВЕР', true);
+          showToast('ОШИБКА СЕТИ ПРИ СОХРАНЕНИИ', true);
+        }
       }
 
       /* ---------------------------------------------------------
-         10. ПРИВЯЗКА ОБРАБОТЧИКОВ СОБЫТИЙ
+         7. ДЕЙСТВИЯ С ЭЛЕМЕНТАМИ (PUT / DELETE / OPEN)
+         --------------------------------------------------------- */
+      async function handleToggleTask(btn) {
+        const id = btn.getAttribute('data-id');
+        const currentStatus = btn.getAttribute('data-status');
+        const nextStatus = currentStatus === 'done' ? 'todo' : 'done';
+
+        btn.disabled = true;
+        try {
+          await apiRequest(`/tasks/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: nextStatus })
+          });
+          await fetchModule('tasks');
+          setConnectionStatus('online');
+          TelegramBridge.haptic('light');
+          renderApp();
+        } catch (err) {
+          console.error('Toggle task error:', err);
+          btn.disabled = false;
+          setConnectionStatus('error');
+          showToast('НЕ УДАЛОСЬ ОБНОВИТЬ СТАТУС', true);
+        }
+      }
+
+      async function handleDeleteItem(btn) {
+        const modId = btn.getAttribute('data-module');
+        const itemId = btn.getAttribute('data-id');
+        if (!modId || !itemId) return;
+
+        btn.disabled = true;
+        try {
+          await apiRequest(`/${modId}/${encodeURIComponent(itemId)}`, {
+            method: 'DELETE'
+          });
+          await fetchModule(modId);
+          setConnectionStatus('online');
+          TelegramBridge.haptic('light');
+          renderApp();
+          showToast('ЗАПИСЬ УДАЛЕНА');
+        } catch (err) {
+          console.error('Delete error:', err);
+          btn.disabled = false;
+          setConnectionStatus('error');
+          showToast('ОШИБКА СЕТИ ПРИ УДАЛЕНИИ', true);
+        }
+      }
+
+      /* ---------------------------------------------------------
+         8. ПРИВЯЗКА ОБРАБОТЧИКОВ СОБЫТИЙ
          --------------------------------------------------------- */
       function bindEvents() {
+        // Кнопка принудительной синхронизации в шапке
+        document.getElementById('refresh-btn').addEventListener('click', () => {
+          TelegramBridge.haptic('light');
+          syncAllModules(true);
+        });
+
         // Переключение вкладок
-        document.getElementById('tabs-nav').addEventListener('click', function (e) {
-          var btn = e.target.closest('[data-tab]');
+        document.getElementById('tabs-nav').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-tab]');
           if (!btn) return;
-          var nextMod = btn.getAttribute('data-tab');
+          const nextMod = btn.getAttribute('data-tab');
           if (nextMod && nextMod !== appState.activeModule) {
             appState.activeModule = nextMod;
             TelegramBridge.haptic('light');
@@ -2201,123 +2362,107 @@
           }
         });
 
-        // Действия внутри основного контента
-        document.getElementById('main-area').addEventListener('click', function (e) {
-          var filterBtn = e.target.closest('[data-task-filter]');
+        // Делегирование кликов внутри основного списка
+        document.getElementById('main-area').addEventListener('click', (e) => {
+          const filterBtn = e.target.closest('[data-task-filter]');
           if (filterBtn) {
             appState.taskFilter = filterBtn.getAttribute('data-task-filter') || 'all';
             renderApp();
             return;
           }
 
-          var toggleBtn = e.target.closest('[data-action="toggle-task"]');
+          const toggleBtn = e.target.closest('[data-action="toggle-task"]');
           if (toggleBtn) {
-            DataService.toggleTask(appState.data, toggleBtn.getAttribute('data-id'));
-            TelegramBridge.haptic('light');
-            renderApp();
+            handleToggleTask(toggleBtn);
             return;
           }
 
-          var delBtn = e.target.closest('[data-action="delete"]');
+          const delBtn = e.target.closest('[data-action="delete"]');
           if (delBtn) {
-            var modId = delBtn.getAttribute('data-module');
-            var itemId = delBtn.getAttribute('data-id');
-            DataService.deleteItem(appState.data, modId, itemId);
-            TelegramBridge.haptic('light');
-            renderApp();
-            showToast('УДАЛЕНО');
+            handleDeleteItem(delBtn);
+            return;
+          }
+
+          const openBtn = e.target.closest('[data-action="open-link"]');
+          if (openBtn) {
+            const url = openBtn.getAttribute('data-url');
+            if (url) {
+              TelegramBridge.haptic('light');
+              TelegramBridge.openExternal(url);
+            }
           }
         });
 
         // Открытие и закрытие шторки
         document.getElementById('fab-btn').addEventListener('click', openSheet);
         document.getElementById('sheet-close-btn').addEventListener('click', closeSheet);
-        document.getElementById('sheet-overlay').addEventListener('click', function (e) {
+        document.getElementById('sheet-overlay').addEventListener('click', (e) => {
           if (e.target === e.currentTarget) closeSheet();
         });
-        document.addEventListener('keydown', function (e) {
+        document.addEventListener('keydown', (e) => {
           if (e.key === 'Escape') closeSheet();
         });
 
-        // Интерактивные кнопки внутри формы (настроение и геолокация)
-        document.getElementById('sheet-fields').addEventListener('click', function (e) {
-          var moodBtn = e.target.closest('[data-mood]');
+        // Интерактив внутри формы (выбор настроения и геолокация)
+        document.getElementById('sheet-fields').addEventListener('click', (e) => {
+          const moodBtn = e.target.closest('[data-mood]');
           if (moodBtn) {
             appState.selectedMood = moodBtn.getAttribute('data-mood');
-            var allMoodBtns = document.querySelectorAll('#mood-grid .mood-btn');
-            for (var i = 0; i < allMoodBtns.length; i++) {
-              allMoodBtns[i].classList.toggle('is-selected', allMoodBtns[i] === moodBtn);
-            }
+            document.querySelectorAll('#mood-grid .mood-btn').forEach((btn) => {
+              btn.classList.toggle('is-selected', btn === moodBtn);
+            });
             return;
           }
 
-          var locateBtn = e.target.closest('#geo-locate-btn');
+          const locateBtn = e.target.closest('#geo-locate-btn');
           if (locateBtn) {
             if (!navigator.geolocation) {
-              setFormNotice('ГЕОЛОКАЦИЯ НЕ ПОДДЕРЖИВАЕТСЯ', true);
+              setFormNotice('ГЕОЛОКАЦИЯ НЕ ПОДДЕРЖИВАЕТСЯ УСТРОЙСТВОМ', true);
               return;
             }
+            locateBtn.disabled = true;
             setFormNotice('ЗАПРОС КООРДИНАТ...', false);
             navigator.geolocation.getCurrentPosition(
-              function (pos) {
-                var latInput = document.getElementById('inp-geo-lat');
-                var lngInput = document.getElementById('inp-geo-lng');
+              (pos) => {
+                const latInput = document.getElementById('inp-geo-lat');
+                const lngInput = document.getElementById('inp-geo-lng');
                 if (latInput) latInput.value = pos.coords.latitude.toFixed(6);
                 if (lngInput) lngInput.value = pos.coords.longitude.toFixed(6);
+                locateBtn.disabled = false;
                 setFormNotice('КООРДИНАТЫ ОПРЕДЕЛЕНЫ', false);
                 TelegramBridge.haptic('light');
               },
-              function () {
+              () => {
+                locateBtn.disabled = false;
                 setFormNotice('ДОСТУП К ГЕОПОЗИЦИИ ОТКЛОНЁН — ВВЕДИТЕ ВРУЧНУЮ', true);
               },
-              { enableHighAccuracy: true, timeout: 8000 }
+              { enableHighAccuracy: true, timeout: 10000 }
             );
           }
         });
 
         // Отправка формы
         document.getElementById('sheet-form').addEventListener('submit', handleSheetSubmit);
-
-        // Двойной клик для сброса демо-данных (без confirm)
-        var resetBtn = document.getElementById('reset-demo-btn');
-        resetBtn.addEventListener('click', function () {
-          if (!appState.resetConfirm) {
-            appState.resetConfirm = true;
-            resetBtn.textContent = 'ПОДТВЕРДИТЬ?';
-            resetBtn.classList.add('is-confirm');
-            appState.resetTimer = setTimeout(function () {
-              appState.resetConfirm = false;
-              resetBtn.textContent = 'СБРОС ДЕМО';
-              resetBtn.classList.remove('is-confirm');
-            }, 3000);
-          } else {
-            clearTimeout(appState.resetTimer);
-            appState.resetConfirm = false;
-            resetBtn.textContent = 'СБРОС ДЕМО';
-            resetBtn.classList.remove('is-confirm');
-            appState.data = DataService.resetDemo();
-            renderApp();
-            showToast('ДЕМО-ДАННЫЕ ВОССТАНОВЛЕНЫ');
-          }
-        });
       }
 
       /* ---------------------------------------------------------
-         11. БЕЗОПАСНЫЙ ЗАПУСК ПРИЛОЖЕНИЯ
+         9. ЗАПУСК ПРИЛОЖЕНИЯ
          --------------------------------------------------------- */
       function initApp() {
-        try {
-          TelegramBridge.init();
-          updateLiveClock();
-          setInterval(updateLiveClock, 1000);
+        TelegramBridge.init();
+        appState.userId = TelegramBridge.getUserId();
 
-          appState.data = DataService.loadAll();
-          bindEvents();
-          renderApp();
-        } catch (err) {
-          console.error('Critical app init error:', err);
-          showRuntimeError(err && err.message ? err.message : 'UNKNOWN INIT ERROR');
+        const userBadge = document.getElementById('user-badge');
+        if (userBadge) {
+          userBadge.textContent = `UID // ${appState.userId}`;
         }
+
+        updateLiveClock();
+        setInterval(updateLiveClock, 1000);
+
+        bindEvents();
+        renderApp();
+        syncAllModules(false);
       }
 
       if (document.readyState === 'loading') {
